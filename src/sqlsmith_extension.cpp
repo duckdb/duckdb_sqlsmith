@@ -1,15 +1,14 @@
 #define DUCKDB_EXTENSION_MAIN
 
 #include "sqlsmith_extension.hpp"
-#include "sqlsmith.hh"
 #include "statement_simplifier.hpp"
 #include "fuzzyduck.hpp"
+#include "sqlsmith.hh"
 
-#ifndef DUCKDB_AMALGAMATION
+#include "duckdb.hpp"
 #include "duckdb/function/table_function.hpp"
 #include "duckdb/parser/parser.hpp"
 #include "duckdb/main/extension_util.hpp"
-#endif
 
 namespace duckdb {
 

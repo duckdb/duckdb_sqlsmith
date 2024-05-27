@@ -13,8 +13,8 @@ add_library(
   relmodel.cc
   schema.cc
   sqlsmith.cc)
-set(SQLSMITH_OBJECT_FILES
-    ${SQLSMITH_OBJECT_FILES} $<TARGET_OBJECTS:sqlsmith>
+set(EXTENSION_OBJECT_FILES
+    ${EXTENSION_OBJECT_FILES} $<TARGET_OBJECTS:sqlsmith>
     PARENT_SCOPE)
 
 disable_target_warnings(sqlsmith)
