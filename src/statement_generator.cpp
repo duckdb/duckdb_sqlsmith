@@ -4,21 +4,29 @@
 #include "duckdb/common/random_engine.hpp"
 #include "duckdb/common/types/uuid.hpp"
 #include "duckdb/function/table/system_functions.hpp"
+#include "duckdb/main/attached_database.hpp"
+#include "duckdb/main/database_manager.hpp"
 #include "duckdb/parser/expression/list.hpp"
+#include "duckdb/parser/parsed_data/create_function_info.hpp"
 #include "duckdb/parser/parsed_data/create_schema_info.hpp"
 #include "duckdb/parser/parsed_data/create_table_info.hpp"
-#include "duckdb/parser/parsed_data/create_view_info.hpp"
-#include "duckdb/parser/parsed_data/create_function_info.hpp"
 #include "duckdb/parser/parsed_data/create_type_info.hpp"
+#include "duckdb/parser/parsed_data/create_view_info.hpp"
 #include "duckdb/parser/parsed_expression_iterator.hpp"
 #include "duckdb/parser/query_node/select_node.hpp"
 #include "duckdb/parser/query_node/set_operation_node.hpp"
+#include "duckdb/parser/statement/attach_statement.hpp"
 #include "duckdb/parser/statement/create_statement.hpp"
 #include "duckdb/parser/statement/delete_statement.hpp"
+#include "duckdb/parser/statement/detach_statement.hpp"
 #include "duckdb/parser/statement/insert_statement.hpp"
+#include "duckdb/parser/statement/multi_statement.hpp"
 #include "duckdb/parser/statement/select_statement.hpp"
+#include "duckdb/parser/statement/set_statement.hpp"
 #include "duckdb/parser/statement/update_statement.hpp"
 #include "duckdb/parser/tableref/list.hpp"
+
+#define TESTING_DIRECTORY_NAME "duckdb_unittest_tempdir"
 
 namespace duckdb {
 
@@ -28,6 +36,7 @@ struct GeneratorContext {
 	vector<reference<CatalogEntry>> table_functions;
 	vector<reference<CatalogEntry>> pragma_functions;
 	vector<reference<CatalogEntry>> tables_and_views;
+	vector<reference<AttachedDatabase>> attached_databases;
 };
 
 StatementGenerator::StatementGenerator(ClientContext &context) : context(context), parent(nullptr), depth(0) {
@@ -46,8 +55,14 @@ StatementGenerator::~StatementGenerator() {
 }
 
 std::shared_ptr<GeneratorContext> StatementGenerator::GetDatabaseState(ClientContext &context) {
+	// start a transaction so that catalog scans can take place.
+	if (!context.transaction.HasActiveTransaction()) {
+		context.transaction.BeginTransaction();
+	}
 	auto result = std::make_shared<GeneratorContext>();
 	result->test_types = TestAllTypesFun::GetTestTypes();
+	auto &db_manager = DatabaseManager::Get(context);
+	result->attached_databases = db_manager.GetDatabases(context);
 
 	auto schemas = Catalog::GetAllSchemas(context);
 	// extract the functions
@@ -73,12 +88,28 @@ std::shared_ptr<GeneratorContext> StatementGenerator::GetDatabaseState(ClientCon
 			result->tables_and_views.push_back(entry);
 		});
 	}
+	if (context.transaction.HasActiveTransaction()) {
+		context.transaction.Commit();
+	}
 	return result;
 }
 
 unique_ptr<SQLStatement> StatementGenerator::GenerateStatement() {
 	if (RandomPercentage(80)) {
 		return GenerateStatement(StatementType::SELECT_STATEMENT);
+	}
+	if (RandomPercentage(40)) {
+		if (RandomPercentage(50)) {
+			// We call this directly so we have a higher chance to fuzz persistent databases
+			return GenerateAttachUse();
+		}
+		return GenerateStatement(StatementType::ATTACH_STATEMENT);
+	}
+	if (RandomPercentage(60)) {
+		return GenerateStatement(StatementType::DETACH_STATEMENT);
+	}
+	if (RandomPercentage(30)) {
+		return GenerateStatement(StatementType::SET_STATEMENT);
 	}
 	return GenerateStatement(StatementType::CREATE_STATEMENT);
 }
@@ -89,6 +120,13 @@ unique_ptr<SQLStatement> StatementGenerator::GenerateStatement(StatementType typ
 		return GenerateSelect();
 	case StatementType::CREATE_STATEMENT:
 		return GenerateCreate();
+	case StatementType::ATTACH_STATEMENT:
+		return GenerateAttach();
+	case StatementType::DETACH_STATEMENT:
+		return GenerateDetach();
+	// generate USE statement
+	case StatementType::SET_STATEMENT:
+		return GenerateSet();
 	default:
 		throw InternalException("Unsupported type");
 	}
@@ -107,6 +145,76 @@ unique_ptr<CreateStatement> StatementGenerator::GenerateCreate() {
 	auto create = make_uniq<CreateStatement>();
 	create->info = GenerateCreateInfo();
 	return create;
+}
+
+unique_ptr<AttachStatement> StatementGenerator::GenerateAttach() {
+	auto attach = make_uniq<AttachStatement>();
+	attach->info = GenerateAttachInfo();
+	return attach;
+}
+
+unique_ptr<DetachStatement> StatementGenerator::GenerateDetach() {
+	auto detach = make_uniq<DetachStatement>();
+	detach->info = GenerateDetachInfo();
+	return detach;
+}
+
+// generate USE statement
+unique_ptr<SetStatement> StatementGenerator::GenerateSet() {
+	auto name_expr = make_uniq<ConstantExpression>(GenerateDataBaseName());
+	if (RandomPercentage(90)) {
+		auto name = GetRandomAttachedDataBase();
+		name_expr = make_uniq<ConstantExpression>(Value(name));
+	}
+	auto set = make_uniq<SetVariableStatement>("schema", std::move(name_expr), SetScope::AUTOMATIC);
+	return set;
+}
+
+unique_ptr<MultiStatement> StatementGenerator::GenerateAttachUse() {
+	auto multi_statement = make_uniq<MultiStatement>();
+	multi_statement->statements.push_back(std::move(GenerateAttach()));
+	multi_statement->statements.push_back(std::move(GenerateSet()));
+	return multi_statement;
+}
+
+//===--------------------------------------------------------------------===//
+// Generate Detach Info
+//===--------------------------------------------------------------------===//
+
+unique_ptr<DetachInfo> StatementGenerator::GenerateDetachInfo() {
+	auto info = make_uniq<DetachInfo>();
+	if (RandomPercentage(20)) {
+		info->name = "RANDOM_NAME_" + RandomString(15);
+	} else {
+		info->name = GetRandomAttachedDataBase();
+	}
+	return info;
+}
+
+std::string StatementGenerator::GetRandomAttachedDataBase() {
+	auto state = GetDatabaseState(context);
+	auto st_name = state->attached_databases[RandomValue(state->attached_databases.size())];
+	auto name = st_name.get().name;
+	return name;
+}
+
+//===--------------------------------------------------------------------===//
+// Generate Attach Info
+//===--------------------------------------------------------------------===//
+
+unique_ptr<AttachInfo> StatementGenerator::GenerateAttachInfo() {
+	auto info = make_uniq<AttachInfo>();
+	auto fs = FileSystem::CreateLocal();
+	// check if the directory exists
+	if (!fs->DirectoryExists(TESTING_DIRECTORY_NAME)) {
+		fs->CreateDirectory(TESTING_DIRECTORY_NAME);
+	}
+	info->name = RandomString(10);
+	info->path = TESTING_DIRECTORY_NAME + string("/fuzz_gen_db_") + info->name + string(".db");
+	if (RandomPercentage(30)) {
+		info->options["READ_ONLY"] = Value(true);
+	}
+	return info;
 }
 
 //===--------------------------------------------------------------------===//
@@ -935,6 +1043,12 @@ unique_ptr<ParsedExpression> StatementGenerator::GenerateLambda() {
 	current_column_names.erase(std::find(current_column_names.begin(), current_column_names.end(), lambda_parameter));
 
 	return make_uniq<LambdaExpression>(std::move(lhs), std::move(rhs));
+}
+
+string StatementGenerator::GenerateDataBaseName() {
+	auto identifier = "DB" + to_string(GetIndex());
+	current_relation_names.push_back(identifier);
+	return identifier;
 }
 
 string StatementGenerator::GenerateTableIdentifier() {
