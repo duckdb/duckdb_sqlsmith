@@ -14,11 +14,11 @@ FuzzyDuck::~FuzzyDuck() {
 }
 
 void FuzzyDuck::BeginFuzzing() {
-	auto &engine = RandomEngine::Get(context);
+	auto &random_engine = RandomEngine::Get(context);
 	if (seed == 0) {
-		seed = engine.NextRandomInteger();
+		seed = random_engine.NextRandomInteger();
 	}
-	engine.SetSeed(seed);
+	random_engine.SetSeed(seed);
 	if (max_queries == 0) {
 		throw BinderException("Provide a max_queries argument greater than 0");
 	}
