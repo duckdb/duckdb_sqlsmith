@@ -26,8 +26,6 @@
 #include "duckdb/parser/statement/update_statement.hpp"
 #include "duckdb/parser/tableref/list.hpp"
 
-#define TESTING_DIRECTORY_NAME "duckdb_unittest_tempdir"
-
 namespace duckdb {
 
 struct GeneratorContext {
@@ -206,11 +204,11 @@ unique_ptr<AttachInfo> StatementGenerator::GenerateAttachInfo() {
 	auto info = make_uniq<AttachInfo>();
 	auto fs = FileSystem::CreateLocal();
 	// check if the directory exists
-	if (!fs->DirectoryExists(TESTING_DIRECTORY_NAME)) {
-		fs->CreateDirectory(TESTING_DIRECTORY_NAME);
+	if (!fs->DirectoryExists(string("../") + TESTING_DIRECTORY_NAME)) {
+		fs->CreateDirectory(string("../") + TESTING_DIRECTORY_NAME);
 	}
 	info->name = RandomString(10);
-	info->path = TESTING_DIRECTORY_NAME + string("/fuzz_gen_db_") + info->name + string(".db");
+	info->path = string("../") + TESTING_DIRECTORY_NAME + string("/fuzz_gen_db_") + info->name + string(".db");
 	if (RandomPercentage(30)) {
 		info->options["READ_ONLY"] = Value(true);
 	}

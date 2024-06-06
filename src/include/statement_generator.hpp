@@ -12,6 +12,8 @@
 #include "duckdb/parser/parsed_data/detach_info.hpp"
 #include "duckdb/parser/query_node.hpp"
 
+#define TESTING_DIRECTORY_NAME "duckdb_sqlsmith_unittest_tempdir"
+
 namespace duckdb {
 class SQLStatement;
 class SelectStatement;
