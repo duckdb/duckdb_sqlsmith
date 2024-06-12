@@ -25,6 +25,7 @@ public:
 	string complete_log;
 	string log;
 	bool verbose_output = false;
+	bool enable_verification = false;
 	idx_t timeout = 30;
 
 public:
