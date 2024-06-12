@@ -16,6 +16,7 @@ struct SQLSmithOptions {
 	bool dump_all_queries = false;
 	bool dump_all_graphs = false;
 	bool verbose_output = false;
+	bool enable_verification = false;
 	std::string complete_log;
 	std::string log;
 };
