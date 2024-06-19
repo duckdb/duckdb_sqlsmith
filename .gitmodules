@@ -5,3 +5,4 @@
 [submodule "duckdb"]
 	path = duckdb
 	url = https://github.com/hmeriann/duckdb.git
+	branch = add-larger-ingestion-from-tmonster
