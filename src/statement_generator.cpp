@@ -718,7 +718,26 @@ unique_ptr<ParsedExpression> StatementGenerator::GenerateFunction() {
 	switch (function.type) {
 	case CatalogType::SCALAR_FUNCTION_ENTRY: {
 		auto &scalar_entry = function.Cast<ScalarFunctionCatalogEntry>();
-		auto actual_function = scalar_entry.functions.GetFunctionByOffset(RandomValue(scalar_entry.functions.Size()));
+		auto offset = RandomValue(scalar_entry.functions.Size());
+		auto actual_function = scalar_entry.functions.GetFunctionByOffset(offset);
+
+		// we shouldn't generate VOLATILE functions if verification is enabled
+		// bool is_volatile = scalar_entry.functions.GetFunctionByOffset(offset).stability == FunctionStability::VOLATILE;
+
+		if (verification_enabled && actual_function.stability == FunctionStability::VOLATILE) {
+			int i = 0;
+			while (i <=10) {
+				auto &function_ref = Choose(generator_context->scalar_functions);
+				auto &function = function_ref.get();
+				auto &scalar_entry = function.Cast<ScalarFunctionCatalogEntry>();
+				actual_function = scalar_entry.functions.GetFunctionByOffset(RandomValue(scalar_entry.functions.Size()));
+				// try to find non volatile function
+				if (verification_enabled && actual_function.stability != FunctionStability::VOLATILE) {
+					break;
+				}
+				i++;
+			}
+		}
 
 		name = scalar_entry.name;
 		arguments = actual_function.arguments;
@@ -733,6 +752,21 @@ unique_ptr<ParsedExpression> StatementGenerator::GenerateFunction() {
 		auto &aggregate_entry = function.Cast<AggregateFunctionCatalogEntry>();
 		auto actual_function =
 		    aggregate_entry.functions.GetFunctionByOffset(RandomValue(aggregate_entry.functions.Size()));
+
+		// we shouldn't generate VOLATILE functions if verification is enabled
+		if (verification_enabled && actual_function.stability == FunctionStability::VOLATILE) {
+			int i = 0;
+			while (i <=10) {
+				auto &aggregate_entry = function.Cast<AggregateFunctionCatalogEntry>();
+				auto actual_function = 
+					aggregate_entry.functions.GetFunctionByOffset(RandomValue(aggregate_entry.functions.Size()));
+				// try to find non volatile function
+				if (verification_enabled && actual_function.stability != FunctionStability::VOLATILE) {
+					break;
+				}
+				i++;
+			}
+		}
 
 		name = aggregate_entry.name;
 		min_parameters = actual_function.arguments.size();

@@ -84,6 +84,7 @@ namespace duckdb
 	{
 		// generate the statement
 		StatementGenerator generator(context);
+		generator.verification_enabled = enable_verification;
 		// accumulate statement(s)
 		auto statement = string("");
 		if (generator.RandomPercentage(10))

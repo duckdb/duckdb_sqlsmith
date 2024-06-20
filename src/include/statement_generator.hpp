@@ -53,6 +53,7 @@ public:
 
 	//! Returns true with a percentage change (0-100)
 	bool RandomPercentage(idx_t percentage);
+	bool verification_enabled = false;
 	idx_t RandomValue(idx_t max);
 	string GetRandomAttachedDataBase();
 	unique_ptr<SQLStatement> GenerateStatement(StatementType type); // came from private
