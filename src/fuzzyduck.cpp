@@ -101,7 +101,9 @@ namespace duckdb
 		{
 			// normal statement
 			LogTask("Generating Single-Statement query with seed " + to_string(seed));
-			statement = generator.GenerateStatement()->ToString();
+			auto generated_statement = generator.GenerateStatement();
+			statement = generated_statement->ToString();
+			// D_ASSERT(1);
 		}
 		return statement;
 	}
