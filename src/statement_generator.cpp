@@ -348,7 +348,8 @@ unique_ptr<QueryNode> StatementGenerator::GenerateQueryNode() {
 		GenerateCTEs(*setop);
 		setop->setop_type = Choose<SetOperationType>({SetOperationType::EXCEPT, SetOperationType::INTERSECT,
 		                                              SetOperationType::UNION, SetOperationType::UNION_BY_NAME});
-		setop->left = GenerateQueryNode();
+)
+		setop->left =  GenerateQueryNode();
 		setop->right = GenerateQueryNode();
 		switch (setop->setop_type) {
 		case SetOperationType::EXCEPT:
@@ -520,7 +521,9 @@ unique_ptr<TableRef> StatementGenerator::GenerateTableFunctionRef() {
 	auto function = make_uniq<TableFunctionRef>();
 	auto &table_function_ref = Choose(generator_context->table_functions);
 	auto &entry = table_function_ref.get().Cast<TableFunctionCatalogEntry>();
-	auto table_function = entry.functions.GetFunctionByOffset(RandomValue(entry.functions.Size()));
+	//fails somewhere after here 
+	auto value = RandomValue(entry.functions.Size());
+	auto table_function = entry.functions.GetFunctionByOffset(value);
 
 	auto result = make_uniq<TableFunctionRef>();
 	vector<unique_ptr<ParsedExpression>> children;
@@ -726,7 +729,7 @@ unique_ptr<ParsedExpression> StatementGenerator::GenerateFunction() {
 
 		if (verification_enabled && actual_function.stability == FunctionStability::VOLATILE) {
 			int i = 0;
-			while (i <=10) {
+			while (i <= 10) {
 				auto &function_ref = Choose(generator_context->scalar_functions);
 				auto &function = function_ref.get();
 				auto &scalar_entry = function.Cast<ScalarFunctionCatalogEntry>();
@@ -815,18 +818,24 @@ unique_ptr<ParsedExpression> StatementGenerator::GenerateFunction() {
 }
 
 unique_ptr<OrderModifier> StatementGenerator::GenerateOrderBy() {
-	auto result = make_uniq<OrderModifier>();
-	while (true) {
-		auto order_type = Choose<OrderType>({OrderType::ASCENDING, OrderType::DESCENDING, OrderType::ORDER_DEFAULT});
-		auto null_type = Choose<OrderByNullType>(
-		    {OrderByNullType::NULLS_FIRST, OrderByNullType::NULLS_LAST, OrderByNullType::ORDER_DEFAULT});
-		result->orders.emplace_back(order_type, null_type, GenerateExpression());
-		// continue with a random chance
-		if (RandomPercentage(50)) {
-			break;
-		}
-	}
-	return result;
+    auto result = make_uniq<OrderModifier>();
+    // while (true) {
+        
+        auto order_type = Choose<OrderType>({OrderType::ASCENDING, OrderType::DESCENDING, OrderType::ORDER_DEFAULT});
+        auto null_type = Choose<OrderByNullType>(
+            {OrderByNullType::NULLS_FIRST, OrderByNullType::NULLS_LAST, OrderByNullType::ORDER_DEFAULT});
+        
+        // for each expression in the select list
+        // expr = select_list[i].Copy()
+        // result->orders.emplace_back(order_type, null_type, std::move(expr));
+        result->orders.emplace_back(order_type, null_type, GenerateStar());
+        
+    //  // continue with a random chance
+    //  if (RandomPercentage(50)) {
+    //      break;
+    //  }
+    // }
+    return result;
 }
 
 unique_ptr<ParsedExpression> StatementGenerator::GenerateOperator() {
