@@ -26,6 +26,8 @@
 #include "duckdb/parser/statement/update_statement.hpp"
 #include "duckdb/parser/tableref/list.hpp"
 
+#include "iostream"
+
 namespace duckdb {
 
 struct GeneratorContext {
@@ -348,7 +350,6 @@ unique_ptr<QueryNode> StatementGenerator::GenerateQueryNode() {
 		GenerateCTEs(*setop);
 		setop->setop_type = Choose<SetOperationType>({SetOperationType::EXCEPT, SetOperationType::INTERSECT,
 		                                              SetOperationType::UNION, SetOperationType::UNION_BY_NAME});
-)
 		setop->left =  GenerateQueryNode();
 		setop->right = GenerateQueryNode();
 		switch (setop->setop_type) {
@@ -521,10 +522,10 @@ unique_ptr<TableRef> StatementGenerator::GenerateTableFunctionRef() {
 	auto function = make_uniq<TableFunctionRef>();
 	auto &table_function_ref = Choose(generator_context->table_functions);
 	auto &entry = table_function_ref.get().Cast<TableFunctionCatalogEntry>();
-	//fails somewhere after here 
-	auto value = RandomValue(entry.functions.Size());
-	auto table_function = entry.functions.GetFunctionByOffset(value);
-
+	
+	//fails at this check, because some entries don't have functions
+	// auto value = RandomValue(entry.functions.Size());
+	auto table_function = entry.functions.GetFunctionByOffset(0);
 	auto result = make_uniq<TableFunctionRef>();
 	vector<unique_ptr<ParsedExpression>> children;
 	for (idx_t i = 0; i < table_function.arguments.size(); i++) {
