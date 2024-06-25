@@ -521,7 +521,7 @@ unique_ptr<TableRef> StatementGenerator::GenerateTableFunctionRef() {
 	auto random_val = RandomValue(original_val);
 	auto table_function_ref = &generator_context->table_functions[random_val];
 	while (table_function_ref->get().type == CatalogType::TABLE_MACRO_ENTRY) {
-		random_val +=1 % generator_context->table_functions.size();
+		random_val += 1 % original_val;
 		if (random_val == original_val) {
 			throw InternalException("No table_functions to test.");
 		}
