@@ -525,7 +525,7 @@ unique_ptr<TableRef> StatementGenerator::GenerateTableFunctionRef() {
 		if (random_val == original_val) {
 			throw InternalException("No table_functions to test.");
 		}
-		table_function_ref = &generator_context->table_functions[RandomValue(original_val)];
+		table_function_ref = &generator_context->table_functions[random_val];
 	}
 	auto &entry = table_function_ref->get().Cast<TableFunctionCatalogEntry>();
 	auto table_function = entry.functions.GetFunctionByOffset(RandomValue(entry.functions.Size()));
