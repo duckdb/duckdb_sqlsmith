@@ -165,7 +165,7 @@ unique_ptr<SetStatement> StatementGenerator::GenerateSet() {
 		name_expr = make_uniq<ConstantExpression>(Value(name));
 	}
 	auto set = make_uniq<SetVariableStatement>("schema", std::move(name_expr), SetScope::AUTOMATIC);
-	return set;
+	return unique_ptr_cast<duckdb::SetVariableStatement, duckdb::SetStatement>(std::move(set));
 }
 
 unique_ptr<MultiStatement> StatementGenerator::GenerateAttachUse() {
