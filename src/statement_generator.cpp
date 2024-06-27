@@ -517,11 +517,13 @@ unique_ptr<TableRef> StatementGenerator::GenerateSubqueryRef() {
 }
 
 unique_ptr<TableRef> StatementGenerator::GenerateTableFunctionRef() {
-	auto original_val = generator_context->table_functions.size();
-	auto random_val = RandomValue(original_val);
+	auto num_table_functions = generator_context->table_functions.size();
+	auto random_val = RandomValue(num_table_functions);
+	auto original_val = random_val;
 	auto table_function_ref = &generator_context->table_functions[random_val];
 	while (table_function_ref->get().type == CatalogType::TABLE_MACRO_ENTRY) {
-		random_val += 1 % original_val;
+		random_val += 1;
+		random_val %= num_table_functions;
 		if (random_val == original_val) {
 			throw InternalException("No table_functions to test.");
 		}
