@@ -1201,7 +1201,7 @@ string StatementGenerator::RandomString(idx_t length) {
 
 	const string charset = "$_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 	string result = "";
-	for (int i = 0; i < length; ++i) {
+	for (idx_t i = 0; i < length; ++i) {
 		int randomIndex = RandomValue(charset.length());
 		result += charset[randomIndex];
 	}
