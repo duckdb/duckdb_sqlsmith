@@ -517,9 +517,19 @@ unique_ptr<TableRef> StatementGenerator::GenerateSubqueryRef() {
 }
 
 unique_ptr<TableRef> StatementGenerator::GenerateTableFunctionRef() {
-	auto function = make_uniq<TableFunctionRef>();
-	auto &table_function_ref = Choose(generator_context->table_functions);
-	auto &entry = table_function_ref.get().Cast<TableFunctionCatalogEntry>();
+	auto num_table_functions = generator_context->table_functions.size();
+	auto random_val = RandomValue(num_table_functions);
+	auto original_val = random_val;
+	auto table_function_ref = &generator_context->table_functions[random_val];
+	while (table_function_ref->get().type == CatalogType::TABLE_MACRO_ENTRY) {
+		random_val += 1;
+		random_val %= num_table_functions;
+		if (random_val == original_val) {
+			throw InternalException("No table_functions to test.");
+		}
+		table_function_ref = &generator_context->table_functions[random_val];
+	}
+	auto &entry = table_function_ref->get().Cast<TableFunctionCatalogEntry>();
 	auto table_function = entry.functions.GetFunctionByOffset(RandomValue(entry.functions.Size()));
 
 	auto result = make_uniq<TableFunctionRef>();
