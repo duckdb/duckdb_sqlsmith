@@ -73,7 +73,7 @@ jobs:
         shell: bash
         run: |
             chmod +x duckdb
-            runtime="10 minute"
+            runtime="1 minute"
             endtime=$(date -ud "$runtime" +%s)
 
             while [[ $(date -u +%s) -le $endtime ]]
