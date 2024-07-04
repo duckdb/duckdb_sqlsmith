@@ -1,0 +1,84 @@
+name: test-fuzzer-ci-still-works
+on:
+  workflow_dispatch:
+  repository_dispatch:
+  push:
+    branches:
+      - '**'
+      - '!main'
+    paths-ignore:
+      - '**'
+      - '!scripts/fuzzer_helper.py'
+      - '!scripts/run_fuzzer.py'
+      - '!scripts/run_sqlancer.py'
+      - '!scripts/runsqlsmith.py'
+
+jobs:
+  build-duckdb:
+    name: Build DuckDB
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    outputs:
+      duckdb-hash: ${{ steps.find-hash.outputs.hash }}
+    env:
+      BUILD_ICU: 1
+      BUILD_JSON: 1
+      BUILD_TPCH: 1
+      BUILD_TPCDS: 1
+      BUILD_PARQUET: 1
+      BUILD_JEMALLOC: 1
+      CRASH_ON_ASSERT: 1
+      GEN: ninja
+
+    steps:
+      - name: Dependencies
+        shell: bash
+        run: sudo apt-get update -y -qq && sudo apt-get install -y -qq ninja-build ccache
+
+      - name: checkout
+      - uses: actions/checkout@v3
+
+      - name: Setup Ccache
+        uses: hendrikmuhs/ccache-action@main
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: duckdb
+          path: build/debug/duckdb
+
+  fuzzer:
+    name: Fuzzer
+    needs:
+    - build-duckdb
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        fuzzer: [duckfuzz, sqlsmith, duckfuzz_functions]
+        data: [alltypes, tpch, emptyalltypes]
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: duckdb/duckdb_sqlsmith
+          fetch-depth: 0
+
+      - name: Download a single artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: duckdb
+
+      - name: Fuzz
+        shell: bash
+        run: |
+            chmod +x duckdb
+            runtime="10 minute"
+            endtime=$(date -ud "$runtime" +%s)
+
+            while [[ $(date -u +%s) -le $endtime ]]
+            do
+                echo "Time Now: `date +%H:%M:%S`"
+                python3 scripts/run_fuzzer.py --no_checks --${{ matrix.fuzzer }} --${{ matrix.data }} --shell=./duckdb --dry
+            done
+
