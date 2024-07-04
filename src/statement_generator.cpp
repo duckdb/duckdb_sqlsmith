@@ -125,6 +125,8 @@ unique_ptr<SQLStatement> StatementGenerator::GenerateStatement(StatementType typ
 	// generate USE statement
 	case StatementType::SET_STATEMENT:
 		return GenerateSet();
+	case StatementType::DELETE_STATEMENT:
+		return GenerateDelete();
 	default:
 		throw InternalException("Unsupported type");
 	}
@@ -173,6 +175,12 @@ unique_ptr<MultiStatement> StatementGenerator::GenerateAttachUse() {
 	multi_statement->statements.push_back(std::move(GenerateAttach()));
 	multi_statement->statements.push_back(std::move(GenerateSet()));
 	return multi_statement;
+}
+
+unique_ptr<DeleteStatement> StatementGenerator::GenerateDelete() {
+	auto delete_statement = make_uniq<DeleteStatement>();
+	delete_statement->table = GenerateTableRef();
+	return delete_statement;
 }
 
 //===--------------------------------------------------------------------===//
