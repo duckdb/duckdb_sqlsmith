@@ -89,7 +89,6 @@ def get_fuzzer_name(fuzzer):
 
 def run_shell_command(cmd):
     command = [shell, '--batch', '-init', '/dev/null']
-
     res = subprocess.run(command, input=bytearray(cmd, 'utf8'), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout = res.stdout.decode('utf8', 'ignore').strip()
     stderr = res.stderr.decode('utf8', 'ignore').strip()
@@ -158,7 +157,7 @@ with open(last_query_log_file, 'r') as f:
 with open(complete_log_file, 'r') as f:
     all_queries = f.read()
 
-(stdout, stderr, returncode) = run_shell_command(load_script + all_queries)
+(stdout, stderr, returncode) = run_shell_command(load_script + '\n' + all_queries, True)
 if returncode == 0:
     print("Failed to reproduce the issue...")
     exit(0)
