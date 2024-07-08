@@ -102,7 +102,7 @@ if dry:
 else:
     current_errors = fuzzer_helper.extract_github_issues(shell, perform_checks)
 
-max_queries = 2000
+max_queries = 1000
 last_query_log_file = 'sqlsmith.log'
 complete_log_file = 'sqlsmith.complete.log'
 
