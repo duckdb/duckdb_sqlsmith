@@ -93,23 +93,23 @@ std::shared_ptr<GeneratorContext> StatementGenerator::GetDatabaseState(ClientCon
 }
 
 unique_ptr<SQLStatement> StatementGenerator::GenerateStatement() {
-	if (RandomPercentage(80)) {
-		return GenerateStatement(StatementType::SELECT_STATEMENT);
-	}
-	if (RandomPercentage(40)) {
-		if (RandomPercentage(50)) {
-			// We call this directly so we have a higher chance to fuzz persistent databases
-			return GenerateAttachUse();
-		}
-		return GenerateStatement(StatementType::ATTACH_STATEMENT);
-	}
-	if (RandomPercentage(60)) {
-		return GenerateStatement(StatementType::DETACH_STATEMENT);
-	}
-	if (RandomPercentage(30)) {
-		return GenerateStatement(StatementType::SET_STATEMENT);
-	}
-	if (RandomPercentage(20)) {
+	// if (RandomPercentage(80)) {
+	// 	return GenerateStatement(StatementType::SELECT_STATEMENT);
+	// }
+	// if (RandomPercentage(40)) {
+	// 	if (RandomPercentage(50)) {
+	// 		// We call this directly so we have a higher chance to fuzz persistent databases
+	// 		return GenerateAttachUse();
+	// 	}
+	// 	return GenerateStatement(StatementType::ATTACH_STATEMENT);
+	// }
+	// if (RandomPercentage(60)) {
+	// 	return GenerateStatement(StatementType::DETACH_STATEMENT);
+	// }
+	// if (RandomPercentage(30)) {
+	// 	return GenerateStatement(StatementType::SET_STATEMENT);
+	// }
+	if (RandomPercentage(40)) { //20
 		return GenerateStatement(StatementType::DELETE_STATEMENT);
 	}
 	return GenerateStatement(StatementType::CREATE_STATEMENT);
@@ -182,7 +182,21 @@ unique_ptr<MultiStatement> StatementGenerator::GenerateAttachUse() {
 
 unique_ptr<DeleteStatement> StatementGenerator::GenerateDelete() {
 	auto delete_statement = make_uniq<DeleteStatement>();
-	delete_statement->table = GenerateTableRef();
+	auto state = GetDatabaseState(context);
+	if (!generator_context->tables_and_views.empty()) {
+		auto &entry_ref = Choose(generator_context->tables_and_views);
+		auto &entry = entry_ref.get();
+		if (entry.type == CatalogType::TABLE_ENTRY) {
+		auto result = make_uniq<BaseTableRef>();
+			result->table_name = entry.name;
+			delete_statement->table = std::move(result);
+		} else {
+		delete_statement->table = GenerateTableRef();
+		}
+	} else {
+		delete_statement->table = GenerateTableRef();
+	}
+	
 	return delete_statement;
 }
 
