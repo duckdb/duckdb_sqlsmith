@@ -93,22 +93,22 @@ std::shared_ptr<GeneratorContext> StatementGenerator::GetDatabaseState(ClientCon
 }
 
 unique_ptr<SQLStatement> StatementGenerator::GenerateStatement() {
-	// if (RandomPercentage(80)) {
-	// 	return GenerateStatement(StatementType::SELECT_STATEMENT);
-	// }
-	// if (RandomPercentage(40)) {
-	// 	if (RandomPercentage(50)) {
-	// 		// We call this directly so we have a higher chance to fuzz persistent databases
-	// 		return GenerateAttachUse();
-	// 	}
-	// 	return GenerateStatement(StatementType::ATTACH_STATEMENT);
-	// }
-	// if (RandomPercentage(60)) {
-	// 	return GenerateStatement(StatementType::DETACH_STATEMENT);
-	// }
-	// if (RandomPercentage(30)) {
-	// 	return GenerateStatement(StatementType::SET_STATEMENT);
-	// }
+	if (RandomPercentage(80)) {
+		return GenerateStatement(StatementType::SELECT_STATEMENT);
+	}
+	if (RandomPercentage(40)) {
+		if (RandomPercentage(50)) {
+			// We call this directly so we have a higher chance to fuzz persistent databases
+			return GenerateAttachUse();
+		}
+		return GenerateStatement(StatementType::ATTACH_STATEMENT);
+	}
+	if (RandomPercentage(60)) {
+		return GenerateStatement(StatementType::DETACH_STATEMENT);
+	}
+	if (RandomPercentage(30)) {
+		return GenerateStatement(StatementType::SET_STATEMENT);
+	}
 	if (RandomPercentage(40)) { //20
 		return GenerateStatement(StatementType::DELETE_STATEMENT);
 	}
@@ -187,11 +187,11 @@ unique_ptr<DeleteStatement> StatementGenerator::GenerateDelete() {
 		auto &entry_ref = Choose(generator_context->tables_and_views);
 		auto &entry = entry_ref.get();
 		if (entry.type == CatalogType::TABLE_ENTRY) {
-		auto result = make_uniq<BaseTableRef>();
+			auto result = make_uniq<BaseTableRef>();
 			result->table_name = entry.name;
 			delete_statement->table = std::move(result);
 		} else {
-		delete_statement->table = GenerateTableRef();
+			delete_statement->table = GenerateTableRef();
 		}
 	} else {
 		delete_statement->table = GenerateTableRef();
