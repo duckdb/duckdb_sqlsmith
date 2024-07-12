@@ -31,9 +31,14 @@ jobs:
 
       - name: checkout
         uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
 
       - name: Setup Ccache
         uses: hendrikmuhs/ccache-action@main
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
 
       - name: build
         run: |
