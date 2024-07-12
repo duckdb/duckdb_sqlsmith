@@ -29,20 +29,29 @@ jobs:
         shell: bash
         run: sudo apt-get update -y -qq && sudo apt-get install -y -qq ninja-build ccache
 
-      - name: checkout
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
         with:
-          submodules: 'recursive'
+          repository: duckdb/duckdb
+          fetch-depth: 0
 
       - name: Setup Ccache
         uses: hendrikmuhs/ccache-action@main
 
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
+      - id: find-hash
+        run: echo "::set-output name=hash::$(git rev-parse HEAD)"
 
-      - name: build
+      - name: create build sqlsmith extension file
+        shell: bash
         run: |
-          make debug
+          echo "duckdb_extension_load(sqlsmith 
+            GIT_URL https://github.com/duckdb/duckdb_sqlsmith 
+            GIT_TAG main 
+          )" > sqlsmith.cmake
+
+      - name: Build
+        shell: bash
+        run: |
+          EXTENSION_CONFIGS="sqlsmith.cmake" make debug
 
       - uses: actions/upload-artifact@v3
         with:
