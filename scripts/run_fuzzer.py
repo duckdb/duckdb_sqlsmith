@@ -157,7 +157,7 @@ with open(last_query_log_file, 'r') as f:
 with open(complete_log_file, 'r') as f:
     all_queries = f.read()
 
-(stdout, stderr, returncode) = run_shell_command(load_script + '\n' + all_queries, True)
+(stdout, stderr, returncode) = run_shell_command(load_script + '\n' + all_queries)
 if returncode == 0:
     print("Failed to reproduce the issue...")
     exit(0)
