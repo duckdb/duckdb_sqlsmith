@@ -30,8 +30,9 @@ jobs:
         run: sudo apt-get update -y -qq && sudo apt-get install -y -qq ninja-build ccache
 
       - name: checkout
-        repository: duckdb/duckdb
         uses: actions/checkout@v3
+        with:
+          repository: duckdb/duckdb
 
       - name: Setup Ccache
         uses: hendrikmuhs/ccache-action@main
@@ -56,7 +57,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          repository: duckdb/duckdb_sqlsmith
           path: duckdb_sqlsmith
           fetch-depth: 0
 
