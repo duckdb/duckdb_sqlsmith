@@ -1,7 +1,7 @@
 name: test-fuzzer-ci-still-works
 on:
   workflow_dispatch:
-  repository_dispatch:
+  pull_request:
   push:
     branches:
       - '**'
@@ -30,6 +30,7 @@ jobs:
         run: sudo apt-get update -y -qq && sudo apt-get install -y -qq ninja-build ccache
 
       - name: checkout
+        repository: duckdb/duckdb
         uses: actions/checkout@v3
 
       - name: Setup Ccache
@@ -45,7 +46,7 @@ jobs:
     needs:
     - build-duckdb
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
@@ -56,6 +57,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: duckdb/duckdb_sqlsmith
+          path: duckdb_sqlsmith
           fetch-depth: 0
 
       - name: Download a single artifact
@@ -70,9 +72,10 @@ jobs:
             runtime="1 minute"
             endtime=$(date -ud "$runtime" +%s)
 
+            cd duckdb_sqlsmith
             while [[ $(date -u +%s) -le $endtime ]]
             do
                 echo "Time Now: `date +%H:%M:%S`"
-                python3 scripts/run_fuzzer.py --no_checks --${{ matrix.fuzzer }} --${{ matrix.data }} --shell=./duckdb --dry
+                python3 scripts/run_fuzzer.py --no_checks --${{ matrix.fuzzer }} --${{ matrix.data }} --shell=../duckdb --dry --max_queries=10
             done
 
