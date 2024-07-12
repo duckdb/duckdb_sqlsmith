@@ -89,7 +89,6 @@ def get_fuzzer_name(fuzzer):
 
 def run_shell_command(cmd):
     command = [shell, '--batch', '-init', '/dev/null']
-
     res = subprocess.run(command, input=bytearray(cmd, 'utf8'), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout = res.stdout.decode('utf8', 'ignore').strip()
     stderr = res.stderr.decode('utf8', 'ignore').strip()
@@ -103,7 +102,7 @@ if dry:
 else:
     current_errors = fuzzer_helper.extract_github_issues(shell, perform_checks)
 
-max_queries = 2000
+max_queries = 1000
 last_query_log_file = 'sqlsmith.log'
 complete_log_file = 'sqlsmith.complete.log'
 
@@ -158,7 +157,7 @@ with open(last_query_log_file, 'r') as f:
 with open(complete_log_file, 'r') as f:
     all_queries = f.read()
 
-(stdout, stderr, returncode) = run_shell_command(load_script + all_queries)
+(stdout, stderr, returncode) = run_shell_command(load_script + '\n' + all_queries, True)
 if returncode == 0:
     print("Failed to reproduce the issue...")
     exit(0)
@@ -196,4 +195,5 @@ print("=========================================")
 required_queries = reduce_sql.reduce_multi_statement(all_queries, shell, load_script)
 cmd = load_script + '\n' + last_query + "\n"
 
-fuzzer_helper.file_issue(cmd, error_msg, fuzzer_name, seed, git_hash)
+if not dry:
+    fuzzer_helper.file_issue(cmd, error_msg, fuzzer_name, seed, git_hash)
