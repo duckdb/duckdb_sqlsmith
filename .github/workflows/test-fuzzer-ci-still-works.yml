@@ -37,9 +37,6 @@ jobs:
       - name: Setup Ccache
         uses: hendrikmuhs/ccache-action@main
 
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-
       - name: build
         run: |
           make debug
