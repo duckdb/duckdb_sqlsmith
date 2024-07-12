@@ -14,6 +14,7 @@ db = None
 shell = None
 perform_checks = True
 dry = False
+max_queries = 1000
 for param in sys.argv:
     if param == '--sqlsmith':
         fuzzer = 'sqlsmith'
@@ -33,6 +34,8 @@ for param in sys.argv:
         shell = param.replace('--shell=', '')
     elif param.startswith('--seed='):
         seed = int(param.replace('--seed=', ''))
+    elif param.startswith('--max_queries='):
+        max_queries = int(param.replace('--max_queries=', ''))
     elif param.startswith('--dry'):
         dry = True
 
@@ -102,7 +105,7 @@ if dry:
 else:
     current_errors = fuzzer_helper.extract_github_issues(shell, perform_checks)
 
-max_queries = 1000
+
 last_query_log_file = 'sqlsmith.log'
 complete_log_file = 'sqlsmith.complete.log'
 
@@ -157,7 +160,7 @@ with open(last_query_log_file, 'r') as f:
 with open(complete_log_file, 'r') as f:
     all_queries = f.read()
 
-(stdout, stderr, returncode) = run_shell_command(load_script + '\n' + all_queries, True)
+(stdout, stderr, returncode) = run_shell_command(load_script + '\n' + all_queries)
 if returncode == 0:
     print("Failed to reproduce the issue...")
     exit(0)
