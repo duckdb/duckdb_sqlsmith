@@ -37,6 +37,10 @@ jobs:
       - name: Setup Ccache
         uses: hendrikmuhs/ccache-action@main
 
+      - name: build
+        run: |
+          make debug
+
       - uses: actions/upload-artifact@v3
         with:
           name: duckdb
