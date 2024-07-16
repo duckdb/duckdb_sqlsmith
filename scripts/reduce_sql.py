@@ -112,10 +112,8 @@ def initial_cleanup(query_log):
     return query_log
 
 
-def run_queries_until_crash_mp(queries, result_file):
-    import duckdb
-
-    con = duckdb.connect()
+def run_queries_until_crash_mp(local_shell, data_load, queries, result_file):
+    import sqlite3
     sqlite_con = sqlite3.connect(result_file)
     sqlite_con.execute('CREATE TABLE queries(id INT, text VARCHAR)')
     sqlite_con.execute('CREATE TABLE result(text VARCHAR)')
@@ -128,16 +126,14 @@ def run_queries_until_crash_mp(queries, result_file):
         sqlite_con.execute('INSERT INTO queries VALUES (?, ?)', (id, q))
         sqlite_con.commit()
 
-        keep_query = False
-        try:
-            con.execute(q)
-            keep_query = is_ddl_query(q)
-        except Exception as e:
-            exception_error = str(e)
-            is_internal_error = fuzzer_helper.is_internal_error(exception_error)
-            if is_internal_error:
-                keep_query = True
-                sqlite_con.execute('UPDATE result SET text=?', (exception_error,))
+        keep_query = is_ddl_query(q)
+        (stdout, stderr, returncode) = run_shell_command(local_shell, '\n'.join(data_load) + ';' + q)
+     
+        is_internal_error = fuzzer_helper.is_internal_error(stderr)
+        exception_error = sanitize_error(stderr).strip()
+        if is_internal_error and len(expected_error) > 0:
+            keep_query = True
+            sqlite_con.execute('UPDATE result SET text=?', (exception_error,))
         if not keep_query:
             sqlite_con.execute('DELETE FROM queries WHERE id=?', (id,))
         if is_internal_error:
@@ -151,12 +147,12 @@ def run_queries_until_crash_mp(queries, result_file):
     sqlite_con.close()
 
 
-def run_queries_until_crash(queries):
+def run_queries_until_crash(shell, data_load, queries):
     sqlite_file = 'cleaned_queries.db'
     if os.path.isfile(sqlite_file):
         os.remove(sqlite_file)
     # run the queries in a separate process because it might crash
-    p = multiprocessing.Process(target=run_queries_until_crash_mp, args=(queries, sqlite_file))
+    p = multiprocessing.Process(target=run_queries_until_crash_mp, args=(shell, data_load, queries, sqlite_file))
     p.start()
     p.join()
 
@@ -172,14 +168,12 @@ def run_queries_until_crash(queries):
     return ([x[0] for x in queries], results[0][0])
 
 
-def cleanup_irrelevant_queries(query_log):
+def cleanup_irrelevant_queries(shell, query_log):
     query_log = initial_cleanup(query_log)
 
     queries = [x for x in query_log.split(';\n') if len(x) > 0]
-    return run_queries_until_crash(queries)
-
-
-# def reduce_internal(start, sql_query, data_load, queries_final, shell, error_msg, max_time_seconds=300):
+    data_load = [""]
+    return run_queries_until_crash(shell, data_load, queries)
 
 
 def reduce_query_log_query(start, shell, queries, query_index, max_time_seconds):
@@ -196,7 +190,7 @@ def reduce_query_log_query(start, shell, queries, query_index, max_time_seconds)
                 break
 
             new_query_list[query_index] = reduce_candidate
-            (_, error) = run_queries_until_crash(new_query_list)
+            (_, error) = run_queries_until_crash(shell, [""], new_query_list)
 
             if error is not None:
                 sql_query = reduce_candidate
@@ -220,6 +214,10 @@ def reduce_multi_statement(sql_queries, local_shell, local_data_load, max_time=3
     print(f"testing if just last statement of multi statement creates the error")
     (stdout, stderr, returncode) = run_shell_command(local_shell, local_data_load + last_statement)
     expected_error = sanitize_error(stderr).strip()
+    if len(expected_error) > 0:
+        print(f"Expected error is {expected_error}")
+    else:
+        print(f"last statement {last_statement} produces no error")
     if fuzzer_helper.is_internal_error(stderr) and len(expected_error) > 0:
         # reduce just the last statement
         print(f"last statement produces error")
@@ -239,9 +237,8 @@ def reduce_query_log(queries, shell, data_load=[], max_time_seconds=300):
             break
         # remove the query at "current_index"
         new_queries = queries[:current_index] + queries[current_index + 1 :]
-        new_queries_with_data = data_load + new_queries
         # try to run the queries and check if we still get the same error
-        (new_queries_x, current_error) = run_queries_until_crash(new_queries_with_data)
+        (new_queries_x, current_error) = run_queries_until_crash(shell, data_load, new_queries)
         if current_error is None:
             # cannot remove this query without invalidating the test case
             current_index += 1
