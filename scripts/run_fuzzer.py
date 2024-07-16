@@ -161,6 +161,7 @@ with open(complete_log_file, 'r') as f:
     all_queries = f.read()
 
 (stdout, stderr, returncode) = run_shell_command(load_script + '\n' + all_queries)
+
 if returncode == 0:
     print("Failed to reproduce the issue...")
     exit(0)
@@ -202,10 +203,10 @@ cmd = load_script + '\n' + required_queries
 (stdout, stderr, returncode) = run_shell_command(cmd)
 error_msg = reduce_sql.sanitize_error(stderr)
 
-print(f"the sql `{cmd}` causes the below error.")
 print(f"================MARKER====================")
-
+print(f"After reducing: the below sql causes an internal error \n `{cmd}`")
 print(f"{error_msg}")
+print(f"================MARKER====================")
 
 if not dry:
     fuzzer_helper.file_issue(cmd, error_msg, fuzzer_name, seed, git_hash)
