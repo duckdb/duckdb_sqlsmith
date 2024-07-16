@@ -196,7 +196,7 @@ print("=========================================")
 # reduce_multi_statement checks just the last statement first as a heuristic to see if
 # only the last statement causes the error.
 required_queries = reduce_sql.reduce_multi_statement(all_queries, shell, load_script)
-cmd = load_script + '\n' + '\n'.join(required_queries)
+cmd = load_script + '\n' + required_queries
 
 # get a new error message.
 (stdout, stderr, returncode) = run_shell_command(cmd)

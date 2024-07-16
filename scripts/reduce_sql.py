@@ -220,9 +220,10 @@ def reduce_multi_statement(sql_queries, local_shell, local_data_load, max_time=3
     print(f"testing if just last statement of multi statement creates the error")
     (stdout, stderr, returncode) = run_shell_command(local_shell, local_data_load + last_statement)
     expected_error = sanitize_error(stderr).strip()
-    if len(expected_error) > 0:
+    if fuzzer_helper.is_internal_error(stderr) and len(expected_error) > 0:
         # reduce just the last statement
-         return reduce(last_statement, local_data_load, local_shell, expected_error, max_time)
+        print(f"last statement produces error")
+        return reduce(last_statement, local_data_load, local_shell, expected_error, max_time)
     queries = reduce_query_log(reducer.statements, local_shell, [local_data_load])
     return "\n".join(queries)
 
