@@ -64,9 +64,9 @@ private:
 	unique_ptr<DeleteStatement> GenerateDelete();
 	unique_ptr<DetachStatement> GenerateDetach();
 	unique_ptr<MultiStatement> GenerateAttachUse();
-	unique_ptr<SelectStatement> GenerateSelect();
 	unique_ptr<SetStatement> GenerateSet();
 
+	unique_ptr<SelectStatement> GenerateSelect();
 	unique_ptr<QueryNode> GenerateQueryNode();
 
 	unique_ptr<AttachInfo> GenerateAttachInfo();
@@ -88,7 +88,7 @@ private:
 	unique_ptr<ParsedExpression> GenerateColumnRef();
 	unique_ptr<ParsedExpression> GenerateFunction();
 	unique_ptr<ParsedExpression> GenerateOperator();
-	unique_ptr<ParsedExpression> GenerateWindowFunction(optional_ptr<AggregateFunction> function = nullptr);
+	unique_ptr<ParsedExpression> GenerateWindowFunction(optional_ptr<AggregateFunction> function = nullptr, bool verification_enabled = false);
 	unique_ptr<ParsedExpression> GenerateConjunction();
 	unique_ptr<ParsedExpression> GenerateStar();
 	unique_ptr<ParsedExpression> GenerateLambda();
@@ -100,6 +100,8 @@ private:
 	unique_ptr<ParsedExpression> GenerateCase();
 
 	unique_ptr<OrderModifier> GenerateOrderBy();
+	unique_ptr<OrderModifier> GenerateOrderByAll();
+
 
 	LogicalType GenerateLogicalType();
 

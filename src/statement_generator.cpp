@@ -395,10 +395,13 @@ unique_ptr<QueryNode> StatementGenerator::GenerateQueryNode() {
 	if (is_distinct) {
 		result->modifiers.push_back(make_uniq<DistinctModifier>());
 	}
-	if (RandomPercentage(20)) {
-		result->modifiers.push_back(GenerateOrderBy());
+	if (verification_enabled) {
+		result->modifiers.push_back(GenerateOrderByAll());
 	}
-	if (RandomPercentage(20)) {
+	else if (!verification_enabled) {
+		if (RandomPercentage(20)) {
+			result->modifiers.push_back(GenerateOrderBy());
+		}
 		if (RandomPercentage(50)) {
 			auto limit_percent_modifier = make_uniq<LimitPercentModifier>();
 			if (RandomPercentage(30)) {
@@ -757,25 +760,6 @@ unique_ptr<ParsedExpression> StatementGenerator::GenerateFunction() {
 		auto &scalar_entry = function.Cast<ScalarFunctionCatalogEntry>();
 		auto offset = RandomValue(scalar_entry.functions.Size());
 		auto actual_function = scalar_entry.functions.GetFunctionByOffset(offset);
-
-		// we shouldn't generate VOLATILE functions if verification is enabled
-		// bool is_volatile = scalar_entry.functions.GetFunctionByOffset(offset).stability == FunctionStability::VOLATILE;
-
-		if (verification_enabled && actual_function.stability == FunctionStability::VOLATILE) {
-			int i = 0;
-			while (i <= 10) {
-				auto &function_ref = Choose(generator_context->scalar_functions);
-				auto &function = function_ref.get();
-				auto &scalar_entry = function.Cast<ScalarFunctionCatalogEntry>();
-				actual_function = scalar_entry.functions.GetFunctionByOffset(RandomValue(scalar_entry.functions.Size()));
-				// try to find non volatile function
-				if (verification_enabled && actual_function.stability != FunctionStability::VOLATILE) {
-					break;
-				}
-				i++;
-			}
-		}
-
 		name = scalar_entry.name;
 		arguments = actual_function.arguments;
 		min_parameters = actual_function.arguments.size();
@@ -822,7 +806,11 @@ unique_ptr<ParsedExpression> StatementGenerator::GenerateFunction() {
 		filter = RandomExpression(10);
 		if (RandomPercentage(10)) {
 			// generate order by
-			order_bys = GenerateOrderBy();
+			if (verification_enabled) {
+				order_bys = GenerateOrderByAll();
+			} else {
+				order_bys = GenerateOrderBy();
+			}
 		}
 		if (RandomPercentage(10)) {
 			distinct = true;
@@ -851,24 +839,26 @@ unique_ptr<ParsedExpression> StatementGenerator::GenerateFunction() {
 	                                     distinct);
 }
 
+unique_ptr<OrderModifier> StatementGenerator::GenerateOrderByAll() {
+    auto result = make_uniq<OrderModifier>();
+	auto order_type = Choose<OrderType>({OrderType::ASCENDING, OrderType::DESCENDING, OrderType::ORDER_DEFAULT});
+	auto null_type = Choose<OrderByNullType>(
+		{OrderByNullType::NULLS_FIRST, OrderByNullType::NULLS_LAST, OrderByNullType::ORDER_DEFAULT});
+	result->orders.emplace_back(order_type, null_type, GenerateStar());
+    return result;
+}
+
 unique_ptr<OrderModifier> StatementGenerator::GenerateOrderBy() {
     auto result = make_uniq<OrderModifier>();
-    // while (true) {
-        
-        auto order_type = Choose<OrderType>({OrderType::ASCENDING, OrderType::DESCENDING, OrderType::ORDER_DEFAULT});
-        auto null_type = Choose<OrderByNullType>(
-            {OrderByNullType::NULLS_FIRST, OrderByNullType::NULLS_LAST, OrderByNullType::ORDER_DEFAULT});
-        
-        // for each expression in the select list
-        // expr = select_list[i].Copy()
-        // result->orders.emplace_back(order_type, null_type, std::move(expr));
-        result->orders.emplace_back(order_type, null_type, GenerateStar());
-        
-    //  // continue with a random chance
-    //  if (RandomPercentage(50)) {
-    //      break;
-    //  }
-    // }
+	while (true) {    
+		auto order_type = Choose<OrderType>({OrderType::ASCENDING, OrderType::DESCENDING, OrderType::ORDER_DEFAULT});
+		auto null_type = Choose<OrderByNullType>(
+			{OrderByNullType::NULLS_FIRST, OrderByNullType::NULLS_LAST, OrderByNullType::ORDER_DEFAULT});
+		result->orders.emplace_back(order_type, null_type, GenerateExpression());
+		if (RandomPercentage(50)) {
+			break;
+		}
+	}
     return result;
 }
 
@@ -956,7 +946,7 @@ public:
 	StatementGenerator &generator;
 };
 
-unique_ptr<ParsedExpression> StatementGenerator::GenerateWindowFunction(optional_ptr<AggregateFunction> function) {
+unique_ptr<ParsedExpression> StatementGenerator::GenerateWindowFunction(optional_ptr<AggregateFunction> function, bool verification_enabled) {
 	if (in_window) {
 		// we cannot nest window functions
 		return GenerateColumnRef();
@@ -1004,7 +994,11 @@ unique_ptr<ParsedExpression> StatementGenerator::GenerateWindowFunction(optional
 		result->partitions.push_back(GenerateExpression());
 	}
 	if (RandomPercentage(30)) {
-		result->orders = std::move(GenerateOrderBy()->orders);
+		if (verification_enabled) {
+			result->orders = std::move(GenerateOrderByAll()->orders);
+		} else {
+			result->orders = std::move(GenerateOrderBy()->orders);
+		}
 	}
 	if (function) {
 		result->filter_expr = RandomExpression(30);

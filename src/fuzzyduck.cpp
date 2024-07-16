@@ -65,7 +65,7 @@ namespace duckdb {
 	}
 
 	string FuzzyDuck::GenerateQuery() {
-		// generate the statement
+		// generate statement
 		StatementGenerator generator(context);
 		generator.verification_enabled = enable_verification;
 		// accumulate statement(s)
