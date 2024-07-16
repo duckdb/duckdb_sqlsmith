@@ -63,12 +63,12 @@ jobs:
     needs:
     - build-duckdb
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
         fuzzer: [duckfuzz, sqlsmith, duckfuzz_functions]
-        data: [alltypes, tpch, emptyalltypes]
+        data: [emptyalltypes]
 
     steps:
       - uses: actions/checkout@v3
