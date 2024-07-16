@@ -111,6 +111,9 @@ unique_ptr<SQLStatement> StatementGenerator::GenerateStatement() {
 	if (RandomPercentage(30)) {
 		return GenerateStatement(StatementType::SET_STATEMENT);
 	}
+	if (RandomPercentage(40)) { //20
+		return GenerateStatement(StatementType::DELETE_STATEMENT);
+	}
 	return GenerateStatement(StatementType::CREATE_STATEMENT);
 }
 
@@ -127,6 +130,8 @@ unique_ptr<SQLStatement> StatementGenerator::GenerateStatement(StatementType typ
 	// generate USE statement
 	case StatementType::SET_STATEMENT:
 		return GenerateSet();
+	case StatementType::DELETE_STATEMENT:
+		return GenerateDelete();
 	default:
 		throw InternalException("Unsupported type");
 	}
@@ -167,7 +172,7 @@ unique_ptr<SetStatement> StatementGenerator::GenerateSet() {
 		name_expr = make_uniq<ConstantExpression>(Value(name));
 	}
 	auto set = make_uniq<SetVariableStatement>("schema", std::move(name_expr), SetScope::AUTOMATIC);
-	return set;
+	return unique_ptr_cast<duckdb::SetVariableStatement, duckdb::SetStatement>(std::move(set));
 }
 
 unique_ptr<MultiStatement> StatementGenerator::GenerateAttachUse() {
@@ -175,6 +180,26 @@ unique_ptr<MultiStatement> StatementGenerator::GenerateAttachUse() {
 	multi_statement->statements.push_back(std::move(GenerateAttach()));
 	multi_statement->statements.push_back(std::move(GenerateSet()));
 	return multi_statement;
+}
+
+unique_ptr<DeleteStatement> StatementGenerator::GenerateDelete() {
+	auto delete_statement = make_uniq<DeleteStatement>();
+	auto state = GetDatabaseState(context);
+	if (!generator_context->tables_and_views.empty()) {
+		auto &entry_ref = Choose(generator_context->tables_and_views);
+		auto &entry = entry_ref.get();
+		if (entry.type == CatalogType::TABLE_ENTRY) {
+			auto result = make_uniq<BaseTableRef>();
+			result->table_name = entry.name;
+			delete_statement->table = std::move(result);
+		} else {
+			delete_statement->table = GenerateTableRef();
+		}
+	} else {
+		delete_statement->table = GenerateTableRef();
+	}
+	
+	return delete_statement;
 }
 
 //===--------------------------------------------------------------------===//
@@ -519,13 +544,21 @@ unique_ptr<TableRef> StatementGenerator::GenerateSubqueryRef() {
 }
 
 unique_ptr<TableRef> StatementGenerator::GenerateTableFunctionRef() {
-	auto function = make_uniq<TableFunctionRef>();
-	auto &table_function_ref = Choose(generator_context->table_functions);
-	auto &entry = table_function_ref.get().Cast<TableFunctionCatalogEntry>();
-	
-	//fails at this check, because some entries don't have functions
-	// auto value = RandomValue(entry.functions.Size());
-	auto table_function = entry.functions.GetFunctionByOffset(0);
+	auto num_table_functions = generator_context->table_functions.size();
+	auto random_val = RandomValue(num_table_functions);
+	auto original_val = random_val;
+	auto table_function_ref = &generator_context->table_functions[random_val];
+	while (table_function_ref->get().type == CatalogType::TABLE_MACRO_ENTRY) {
+		random_val += 1;
+		random_val %= num_table_functions;
+		if (random_val == original_val) {
+			throw InternalException("No table_functions to test.");
+		}
+		table_function_ref = &generator_context->table_functions[random_val];
+	}
+	auto &entry = table_function_ref->get().Cast<TableFunctionCatalogEntry>();
+	auto table_function = entry.functions.GetFunctionByOffset(RandomValue(entry.functions.Size()));
+
 	auto result = make_uniq<TableFunctionRef>();
 	vector<unique_ptr<ParsedExpression>> children;
 	for (idx_t i = 0; i < table_function.arguments.size(); i++) {
@@ -1245,7 +1278,7 @@ string StatementGenerator::RandomString(idx_t length) {
 
 	const string charset = "$_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 	string result = "";
-	for (int i = 0; i < length; ++i) {
+	for (idx_t i = 0; i < length; ++i) {
 		int randomIndex = RandomValue(charset.length());
 		result += charset[randomIndex];
 	}

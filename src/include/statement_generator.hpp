@@ -59,16 +59,18 @@ public:
 	unique_ptr<SQLStatement> GenerateStatement(StatementType type); // came from private
 
 private:
-	unique_ptr<MultiStatement> GenerateAttachUse();
-	unique_ptr<SetStatement> GenerateSet();
 	unique_ptr<AttachStatement> GenerateAttach();
-	unique_ptr<DetachStatement> GenerateDetach();
-	unique_ptr<SelectStatement> GenerateSelect();
 	unique_ptr<CreateStatement> GenerateCreate();
+	unique_ptr<DeleteStatement> GenerateDelete();
+	unique_ptr<DetachStatement> GenerateDetach();
+	unique_ptr<MultiStatement> GenerateAttachUse();
+	unique_ptr<SelectStatement> GenerateSelect();
+	unique_ptr<SetStatement> GenerateSet();
+
 	unique_ptr<QueryNode> GenerateQueryNode();
 
-	unique_ptr<CreateInfo> GenerateCreateInfo();
 	unique_ptr<AttachInfo> GenerateAttachInfo();
+	unique_ptr<CreateInfo> GenerateCreateInfo();
 	unique_ptr<DetachInfo> GenerateDetachInfo();
 
 	void GenerateCTEs(QueryNode &node);
