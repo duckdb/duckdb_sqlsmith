@@ -88,7 +88,7 @@ private:
 	unique_ptr<ParsedExpression> GenerateColumnRef();
 	unique_ptr<ParsedExpression> GenerateFunction();
 	unique_ptr<ParsedExpression> GenerateOperator();
-	unique_ptr<ParsedExpression> GenerateWindowFunction(optional_ptr<AggregateFunction> function = nullptr, bool verification_enabled = false);
+	unique_ptr<ParsedExpression> GenerateWindowFunction(optional_ptr<AggregateFunction> function = nullptr);
 	unique_ptr<ParsedExpression> GenerateConjunction();
 	unique_ptr<ParsedExpression> GenerateStar();
 	unique_ptr<ParsedExpression> GenerateLambda();

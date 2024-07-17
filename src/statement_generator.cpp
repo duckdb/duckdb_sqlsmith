@@ -26,8 +26,6 @@
 #include "duckdb/parser/statement/update_statement.hpp"
 #include "duckdb/parser/tableref/list.hpp"
 
-#include "iostream"
-
 namespace duckdb {
 
 struct GeneratorContext {
@@ -328,28 +326,32 @@ unique_ptr<QueryNode> StatementGenerator::GenerateQueryNode() {
 		select_node->where_clause = RandomExpression(60);
 		select_node->having = RandomExpression(25);
 		if (RandomPercentage(30)) {
-			select_node->groups.group_expressions = GenerateChildren(1, 5);
-			auto group_count = select_node->groups.group_expressions.size();
-			if (RandomPercentage(70)) {
+			if (verification_enabled) {
+				select_node->groups.group_expressions.push_back(GenerateStar());		
+			} else {
+				select_node->groups.group_expressions = GenerateChildren(1, 5);
+				auto group_count = select_node->groups.group_expressions.size();
+				if (RandomPercentage(70)) {
 				// single GROUP BY
 				GroupingSet set;
 				for (idx_t i = 0; i < group_count; i++) {
 					set.insert(i);
 				}
 				select_node->groups.grouping_sets.push_back(std::move(set));
-			} else {
-				// multiple grouping sets
-				while (true) {
-					GroupingSet set;
+				} else {
+					// multiple grouping sets
 					while (true) {
-						set.insert(RandomValue(group_count));
-						if (RandomPercentage(50)) {
+						GroupingSet set;
+						while (true) {
+							set.insert(RandomValue(group_count));
+							if (RandomPercentage(50)) {
+								break;
+							}
+						}
+						select_node->groups.grouping_sets.push_back(std::move(set));
+						if (RandomPercentage(70)) {
 							break;
 						}
-					}
-					select_node->groups.grouping_sets.push_back(std::move(set));
-					if (RandomPercentage(70)) {
-						break;
 					}
 				}
 			}
@@ -397,8 +399,7 @@ unique_ptr<QueryNode> StatementGenerator::GenerateQueryNode() {
 	}
 	if (verification_enabled) {
 		result->modifiers.push_back(GenerateOrderByAll());
-	}
-	else if (!verification_enabled) {
+	} else if (!verification_enabled) {
 		if (RandomPercentage(20)) {
 			result->modifiers.push_back(GenerateOrderBy());
 		}
@@ -537,6 +538,7 @@ unique_ptr<TableRef> StatementGenerator::GenerateSubqueryRef() {
 	unique_ptr<SelectStatement> subquery;
 	{
 		StatementGenerator child_generator(*this);
+		child_generator.verification_enabled = verification_enabled;
 		subquery = unique_ptr_cast<SQLStatement, SelectStatement>(child_generator.GenerateSelect());
 		for (auto &col : child_generator.current_column_names) {
 			current_column_names.push_back(std::move(col));
@@ -774,21 +776,6 @@ unique_ptr<ParsedExpression> StatementGenerator::GenerateFunction() {
 		auto actual_function =
 		    aggregate_entry.functions.GetFunctionByOffset(RandomValue(aggregate_entry.functions.Size()));
 
-		// we shouldn't generate VOLATILE functions if verification is enabled
-		if (verification_enabled && actual_function.stability == FunctionStability::VOLATILE) {
-			int i = 0;
-			while (i <=10) {
-				auto &aggregate_entry = function.Cast<AggregateFunctionCatalogEntry>();
-				auto actual_function = 
-					aggregate_entry.functions.GetFunctionByOffset(RandomValue(aggregate_entry.functions.Size()));
-				// try to find non volatile function
-				if (verification_enabled && actual_function.stability != FunctionStability::VOLATILE) {
-					break;
-				}
-				i++;
-			}
-		}
-
 		name = aggregate_entry.name;
 		min_parameters = actual_function.arguments.size();
 		max_parameters = min_parameters;
@@ -806,11 +793,7 @@ unique_ptr<ParsedExpression> StatementGenerator::GenerateFunction() {
 		filter = RandomExpression(10);
 		if (RandomPercentage(10)) {
 			// generate order by
-			if (verification_enabled) {
-				order_bys = GenerateOrderByAll();
-			} else {
-				order_bys = GenerateOrderBy();
-			}
+			order_bys = GenerateOrderBy();
 		}
 		if (RandomPercentage(10)) {
 			distinct = true;
@@ -835,8 +818,9 @@ unique_ptr<ParsedExpression> StatementGenerator::GenerateFunction() {
 		}
 	}
 	// FIXME: add export_state
-	return make_uniq<FunctionExpression>(std::move(name), std::move(children), std::move(filter), std::move(order_bys),
+	auto func_expr = make_uniq<FunctionExpression>(std::move(name), std::move(children), std::move(filter), std::move(order_bys),
 	                                     distinct);
+	return func_expr;
 }
 
 unique_ptr<OrderModifier> StatementGenerator::GenerateOrderByAll() {
@@ -946,7 +930,7 @@ public:
 	StatementGenerator &generator;
 };
 
-unique_ptr<ParsedExpression> StatementGenerator::GenerateWindowFunction(optional_ptr<AggregateFunction> function, bool verification_enabled) {
+unique_ptr<ParsedExpression> StatementGenerator::GenerateWindowFunction(optional_ptr<AggregateFunction> function) {
 	if (in_window) {
 		// we cannot nest window functions
 		return GenerateColumnRef();
@@ -1079,25 +1063,26 @@ unique_ptr<ParsedExpression> StatementGenerator::GenerateStar() {
 			result->relation_name = GenerateRelationName();
 		}
 	}
-
-	while (RandomPercentage(20)) {
-		auto column_name = GenerateColumnName();
-		if (column_name.empty()) {
-			break;
+	if (!verification_enabled) {
+		while (RandomPercentage(20)) {
+			auto column_name = GenerateColumnName();
+			if (column_name.empty()) {
+				break;
+			}
+			result->exclude_list.insert(column_name);
 		}
-		result->exclude_list.insert(column_name);
-	}
-	while (RandomPercentage(20)) {
-		auto column_name = GenerateColumnName();
-		if (column_name.empty()) {
-			break;
+		while (RandomPercentage(20)) {
+			auto column_name = GenerateColumnName();
+			if (column_name.empty()) {
+				break;
+			}
+			result->replace_list.insert(make_pair(column_name, GenerateExpression()));
 		}
-		result->replace_list.insert(make_pair(column_name, GenerateExpression()));
-	}
-	if (RandomPercentage(50) || expression_depth > 0) {
-		result->columns = true;
-		if (RandomPercentage(50)) {
-			result->expr = GenerateLambda();
+		if (RandomPercentage(50) || expression_depth > 0) {
+			result->columns = true;
+			if (RandomPercentage(50)) {
+				result->expr = GenerateLambda();
+			}
 		}
 	}
 	return std::move(result);
@@ -1159,6 +1144,7 @@ unique_ptr<ParsedExpression> StatementGenerator::GenerateSubquery() {
 
 	{
 		StatementGenerator child_generator(*this);
+		child_generator.verification_enabled = verification_enabled;
 		subquery->subquery = unique_ptr_cast<SQLStatement, SelectStatement>(child_generator.GenerateSelect());
 	}
 	subquery->subquery_type =
@@ -1244,21 +1230,21 @@ string StatementGenerator::GenerateRelationName() {
 }
 
 string StatementGenerator::GenerateColumnName() {
-	if (parent) {
-		auto parent_column = parent->GenerateColumnName();
-		if (current_column_names.empty()) {
+		if (parent) {
+			auto parent_column = parent->GenerateColumnName();
+			if (current_column_names.empty()) {
+				return parent_column;
+			}
+			if (parent_column.empty() || RandomPercentage(80)) {
+				return Choose(current_column_names);
+			}
 			return parent_column;
-		}
-		if (parent_column.empty() || RandomPercentage(80)) {
+		} else {
+			if (current_column_names.empty()) {
+				return string();
+			}
 			return Choose(current_column_names);
 		}
-		return parent_column;
-	} else {
-		if (current_column_names.empty()) {
-			return string();
-		}
-		return Choose(current_column_names);
-	}
 }
 
 idx_t StatementGenerator::RandomValue(idx_t max) {
