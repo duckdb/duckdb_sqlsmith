@@ -7,9 +7,11 @@
 
 namespace duckdb {
 
-FuzzyDuck::FuzzyDuck(ClientContext &context) : context(context) {}
+FuzzyDuck::FuzzyDuck(ClientContext &context) : context(context) {
+}
 
-FuzzyDuck::~FuzzyDuck() {}
+FuzzyDuck::~FuzzyDuck() {
+}
 
 void FuzzyDuck::BeginFuzzing() {
 	auto &random_engine = RandomEngine::Get(context);
@@ -74,7 +76,7 @@ string FuzzyDuck::GenerateQuery() {
 		// multi statement
 		idx_t number_of_statements = generator.RandomValue(1000);
 		LogTask("Generating Multi-Statement query of " + to_string(number_of_statements) + " statements with seed " +
-				to_string(seed));
+			to_string(seed));
 		for (idx_t i = 0; i < number_of_statements; i++) {
 			statement += generator.GenerateStatement()->ToString() + "; ";
 		}
