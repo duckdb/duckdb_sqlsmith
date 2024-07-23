@@ -44,6 +44,7 @@ public:
 public:
 	StatementGenerator(ClientContext &context);
 	StatementGenerator(StatementGenerator &parent);
+	StatementGenerator(StatementGenerator &parent, bool verification);
 	~StatementGenerator();
 
 public:
