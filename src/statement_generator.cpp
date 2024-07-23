@@ -981,11 +981,7 @@ unique_ptr<ParsedExpression> StatementGenerator::GenerateWindowFunction(optional
 		result->partitions.push_back(GenerateExpression());
 	}
 	if (RandomPercentage(30)) {
-		if (verification_enabled) {
-			result->orders = std::move(GenerateOrderByAll()->orders);
-		} else {
-			result->orders = std::move(GenerateOrderBy()->orders);
-		}
+		result->orders = std::move(GenerateOrderBy()->orders);
 	}
 	if (function) {
 		result->filter_expr = RandomExpression(30);
