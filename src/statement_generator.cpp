@@ -542,7 +542,6 @@ unique_ptr<TableRef> StatementGenerator::GenerateSubqueryRef() {
 	unique_ptr<SelectStatement> subquery;
 	{
 		StatementGenerator child_generator(*this, verification_enabled);
-		// child_generator.verification_enabled = verification_enabled;
 		subquery = unique_ptr_cast<SQLStatement, SelectStatement>(child_generator.GenerateSelect());
 		for (auto &col : child_generator.current_column_names) {
 			current_column_names.push_back(std::move(col));
@@ -778,7 +777,7 @@ unique_ptr<ParsedExpression> StatementGenerator::GenerateFunction() {
 	case CatalogType::AGGREGATE_FUNCTION_ENTRY: {
 		auto &aggregate_entry = function.Cast<AggregateFunctionCatalogEntry>();
 		auto actual_function =
-		    aggregate_entry.functions.GetFunctionByOffset(RandomValue(aggregate_entry.functions.Size()));
+			aggregate_entry.functions.GetFunctionByOffset(RandomValue(aggregate_entry.functions.Size()));
 
 		name = aggregate_entry.name;
 		min_parameters = actual_function.arguments.size();
@@ -1140,10 +1139,8 @@ unique_ptr<ParsedExpression> StatementGenerator::GenerateSubquery() {
 		return GenerateConstant();
 	}
 	auto subquery = make_uniq<SubqueryExpression>();
-
 	{
 		StatementGenerator child_generator(*this, verification_enabled);
-		// child_generator.verification_enabled = verification_enabled;
 		subquery->subquery = unique_ptr_cast<SQLStatement, SelectStatement>(child_generator.GenerateSelect());
 	}
 	subquery->subquery_type =
