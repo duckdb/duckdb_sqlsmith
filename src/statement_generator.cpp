@@ -42,16 +42,8 @@ StatementGenerator::StatementGenerator(ClientContext &context) : context(context
 }
 
 StatementGenerator::StatementGenerator(StatementGenerator &parent_p)
-    : context(parent_p.context), parent(&parent_p), generator_context(parent_p.generator_context),
-      depth(parent_p.depth + 1) {
-	if (depth > MAX_DEPTH) {
-		throw InternalException("depth too high");
-	}
-}
-
-StatementGenerator::StatementGenerator(StatementGenerator &parent_p, bool verify)
-    : verification_enabled(verify), context(parent_p.context), parent(&parent_p), 
-	  generator_context(parent_p.generator_context), depth(parent_p.depth + 1) {
+    : verification_enabled(parent_p.verification_enabled), context(parent_p.context), parent(&parent_p), 
+		generator_context(parent_p.generator_context), depth(parent_p.depth + 1) {
 	if (depth > MAX_DEPTH) {
 		throw InternalException("depth too high");
 	}
@@ -541,7 +533,7 @@ unique_ptr<TableRef> StatementGenerator::GenerateSubqueryRef() {
 	}
 	unique_ptr<SelectStatement> subquery;
 	{
-		StatementGenerator child_generator(*this, verification_enabled);
+		StatementGenerator child_generator(*this);
 		subquery = unique_ptr_cast<SQLStatement, SelectStatement>(child_generator.GenerateSelect());
 		for (auto &col : child_generator.current_column_names) {
 			current_column_names.push_back(std::move(col));
@@ -1140,7 +1132,7 @@ unique_ptr<ParsedExpression> StatementGenerator::GenerateSubquery() {
 	}
 	auto subquery = make_uniq<SubqueryExpression>();
 	{
-		StatementGenerator child_generator(*this, verification_enabled);
+		StatementGenerator child_generator(*this);
 		subquery->subquery = unique_ptr_cast<SQLStatement, SelectStatement>(child_generator.GenerateSelect());
 	}
 	subquery->subquery_type =
