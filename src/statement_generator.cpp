@@ -796,7 +796,8 @@ unique_ptr<ParsedExpression> StatementGenerator::GenerateFunction() {
 	case CatalogType::MACRO_ENTRY: {
 		auto &macro_entry = function.Cast<MacroCatalogEntry>();
 		name = macro_entry.name;
-		min_parameters = macro_entry.function->parameters.size();
+		idx_t macro_idx = RandomValue(macro_entry.macros.size());
+		min_parameters = macro_entry.macros[macro_idx]->parameters.size();
 		max_parameters = min_parameters;
 		break;
 	}
