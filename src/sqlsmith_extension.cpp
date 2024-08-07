@@ -22,6 +22,7 @@ struct SQLSmithFunctionData : public TableFunctionData {
 	bool dump_all_queries = false;
 	bool dump_all_graphs = false;
 	bool verbose_output = false;
+	bool enable_verification = false;
 	string complete_log;
 	string log;
 	bool finished = false;
@@ -67,6 +68,7 @@ static void SQLSmithFunction(ClientContext &context, TableFunctionInput &data_p,
 	options.dump_all_queries = data.dump_all_queries;
 	options.dump_all_graphs = data.dump_all_graphs;
 	options.verbose_output = data.verbose_output;
+	options.enable_verification = data.enable_verification;
 	options.complete_log = data.complete_log;
 	options.log = data.log;
 	duckdb_sqlsmith::run_sqlsmith(DatabaseInstance::GetDatabase(context), options);
@@ -139,6 +141,8 @@ static duckdb::unique_ptr<FunctionData> FuzzyDuckBind(ClientContext &context, Ta
 			result->fuzzer.log = StringValue::Get(kv.second);
 		} else if (kv.first == "verbose_output") {
 			result->fuzzer.verbose_output = BooleanValue::Get(kv.second);
+		} else if (kv.first == "enable_verification") {
+			result->fuzzer.enable_verification = BooleanValue::Get(kv.second);
 		}
 	}
 	return_types.emplace_back(LogicalType::BOOLEAN);
@@ -186,6 +190,7 @@ void SqlsmithExtension::Load(DuckDB &db) {
 	fuzzy_duck_fun.named_parameters["log"] = LogicalType::VARCHAR;
 	fuzzy_duck_fun.named_parameters["complete_log"] = LogicalType::VARCHAR;
 	fuzzy_duck_fun.named_parameters["verbose_output"] = LogicalType::BOOLEAN;
+	fuzzy_duck_fun.named_parameters["enable_verification"] = LogicalType::BOOLEAN;
 	ExtensionUtil::RegisterFunction(db_instance, fuzzy_duck_fun);
 
 	TableFunction fuzz_all_functions("fuzz_all_functions", {}, FuzzAllFunctions, FuzzyDuckBind);

@@ -53,6 +53,7 @@ public:
 
 	//! Returns true with a percentage change (0-100)
 	bool RandomPercentage(idx_t percentage);
+	bool verification_enabled = false;
 	idx_t RandomValue(idx_t max);
 	string GetRandomAttachedDataBase();
 	unique_ptr<SQLStatement> GenerateStatement(StatementType type); // came from private
@@ -63,9 +64,9 @@ private:
 	unique_ptr<DeleteStatement> GenerateDelete();
 	unique_ptr<DetachStatement> GenerateDetach();
 	unique_ptr<MultiStatement> GenerateAttachUse();
-	unique_ptr<SelectStatement> GenerateSelect();
 	unique_ptr<SetStatement> GenerateSet();
 
+	unique_ptr<SelectStatement> GenerateSelect();
 	unique_ptr<QueryNode> GenerateQueryNode();
 
 	unique_ptr<AttachInfo> GenerateAttachInfo();
@@ -99,6 +100,8 @@ private:
 	unique_ptr<ParsedExpression> GenerateCase();
 
 	unique_ptr<OrderModifier> GenerateOrderBy();
+	unique_ptr<OrderModifier> GenerateOrderByAll();
+
 
 	LogicalType GenerateLogicalType();
 

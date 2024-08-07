@@ -26,7 +26,10 @@ void FuzzyDuck::BeginFuzzing() {
 		auto &fs = FileSystem::GetFileSystem(context);
 		TryRemoveFile(complete_log);
 		complete_log_handle =
-		    fs.OpenFile(complete_log, FileFlags::FILE_FLAGS_WRITE | FileFlags::FILE_FLAGS_FILE_CREATE_NEW);
+			fs.OpenFile(complete_log, FileFlags::FILE_FLAGS_WRITE | FileFlags::FILE_FLAGS_FILE_CREATE_NEW);
+	}
+	if (enable_verification) {
+		RunQuery("PRAGMA enable_verification");
 	}
 }
 
@@ -64,15 +67,16 @@ void FuzzyDuck::FuzzAllFunctions() {
 }
 
 string FuzzyDuck::GenerateQuery() {
-	// generate the statement
+	// generate statement
 	StatementGenerator generator(context);
+	generator.verification_enabled = enable_verification;
 	// accumulate statement(s)
 	auto statement = string("");
 	if (generator.RandomPercentage(10)) {
 		// multi statement
 		idx_t number_of_statements = generator.RandomValue(1000);
 		LogTask("Generating Multi-Statement query of " + to_string(number_of_statements) + " statements with seed " +
-		        to_string(seed));
+			to_string(seed));
 		for (idx_t i = 0; i < number_of_statements; i++) {
 			statement += generator.GenerateStatement()->ToString() + "; ";
 		}
@@ -157,6 +161,7 @@ void FuzzyDuck::LogToCurrent(const string &message) {
 	file->Sync();
 	file->Close();
 }
+
 void FuzzyDuck::LogToComplete(const string &message) {
 	if (!complete_log_handle) {
 		return;

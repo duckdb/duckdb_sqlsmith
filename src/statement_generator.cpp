@@ -42,8 +42,8 @@ StatementGenerator::StatementGenerator(ClientContext &context) : context(context
 }
 
 StatementGenerator::StatementGenerator(StatementGenerator &parent_p)
-    : context(parent_p.context), parent(&parent_p), generator_context(parent_p.generator_context),
-      depth(parent_p.depth + 1) {
+    : verification_enabled(parent_p.verification_enabled), context(parent_p.context), parent(&parent_p), 
+		generator_context(parent_p.generator_context), depth(parent_p.depth + 1) {
 	if (depth > MAX_DEPTH) {
 		throw InternalException("depth too high");
 	}
@@ -393,10 +393,12 @@ unique_ptr<QueryNode> StatementGenerator::GenerateQueryNode() {
 	if (is_distinct) {
 		result->modifiers.push_back(make_uniq<DistinctModifier>());
 	}
-	if (RandomPercentage(20)) {
-		result->modifiers.push_back(GenerateOrderBy());
-	}
-	if (RandomPercentage(20)) {
+	if (verification_enabled) {
+		result->modifiers.push_back(GenerateOrderByAll());
+	} else if (!verification_enabled) {
+		if (RandomPercentage(5)) {
+			result->modifiers.push_back(GenerateOrderBy());
+		}
 		if (RandomPercentage(50)) {
 			auto limit_percent_modifier = make_uniq<LimitPercentModifier>();
 			if (RandomPercentage(30)) {
@@ -753,8 +755,8 @@ unique_ptr<ParsedExpression> StatementGenerator::GenerateFunction() {
 	switch (function.type) {
 	case CatalogType::SCALAR_FUNCTION_ENTRY: {
 		auto &scalar_entry = function.Cast<ScalarFunctionCatalogEntry>();
-		auto actual_function = scalar_entry.functions.GetFunctionByOffset(RandomValue(scalar_entry.functions.Size()));
-
+		auto offset = RandomValue(scalar_entry.functions.Size());
+		auto actual_function = scalar_entry.functions.GetFunctionByOffset(offset);
 		name = scalar_entry.name;
 		arguments = actual_function.arguments;
 		min_parameters = actual_function.arguments.size();
@@ -767,7 +769,7 @@ unique_ptr<ParsedExpression> StatementGenerator::GenerateFunction() {
 	case CatalogType::AGGREGATE_FUNCTION_ENTRY: {
 		auto &aggregate_entry = function.Cast<AggregateFunctionCatalogEntry>();
 		auto actual_function =
-		    aggregate_entry.functions.GetFunctionByOffset(RandomValue(aggregate_entry.functions.Size()));
+			aggregate_entry.functions.GetFunctionByOffset(RandomValue(aggregate_entry.functions.Size()));
 
 		name = aggregate_entry.name;
 		min_parameters = actual_function.arguments.size();
@@ -816,19 +818,27 @@ unique_ptr<ParsedExpression> StatementGenerator::GenerateFunction() {
 	                                     distinct);
 }
 
+unique_ptr<OrderModifier> StatementGenerator::GenerateOrderByAll() {
+    auto result = make_uniq<OrderModifier>();
+	auto order_type = Choose<OrderType>({OrderType::ASCENDING, OrderType::DESCENDING, OrderType::ORDER_DEFAULT});
+	auto null_type = Choose<OrderByNullType>(
+		{OrderByNullType::NULLS_FIRST, OrderByNullType::NULLS_LAST, OrderByNullType::ORDER_DEFAULT});
+	result->orders.emplace_back(order_type, null_type, GenerateStar());
+    return result;
+}
+
 unique_ptr<OrderModifier> StatementGenerator::GenerateOrderBy() {
-	auto result = make_uniq<OrderModifier>();
+    auto result = make_uniq<OrderModifier>();
 	while (true) {
 		auto order_type = Choose<OrderType>({OrderType::ASCENDING, OrderType::DESCENDING, OrderType::ORDER_DEFAULT});
 		auto null_type = Choose<OrderByNullType>(
-		    {OrderByNullType::NULLS_FIRST, OrderByNullType::NULLS_LAST, OrderByNullType::ORDER_DEFAULT});
+			{OrderByNullType::NULLS_FIRST, OrderByNullType::NULLS_LAST, OrderByNullType::ORDER_DEFAULT});
 		result->orders.emplace_back(order_type, null_type, GenerateExpression());
-		// continue with a random chance
 		if (RandomPercentage(50)) {
 			break;
 		}
 	}
-	return result;
+    return result;
 }
 
 unique_ptr<ParsedExpression> StatementGenerator::GenerateOperator() {
@@ -1044,25 +1054,26 @@ unique_ptr<ParsedExpression> StatementGenerator::GenerateStar() {
 			result->relation_name = GenerateRelationName();
 		}
 	}
-
-	while (RandomPercentage(20)) {
-		auto column_name = GenerateColumnName();
-		if (column_name.empty()) {
-			break;
+	if (!verification_enabled) {
+		while (RandomPercentage(20)) {
+			auto column_name = GenerateColumnName();
+			if (column_name.empty()) {
+				break;
+			}
+			result->exclude_list.insert(column_name);
 		}
-		result->exclude_list.insert(column_name);
-	}
-	while (RandomPercentage(20)) {
-		auto column_name = GenerateColumnName();
-		if (column_name.empty()) {
-			break;
+		while (RandomPercentage(20)) {
+			auto column_name = GenerateColumnName();
+			if (column_name.empty()) {
+				break;
+			}
+			result->replace_list.insert(make_pair(column_name, GenerateExpression()));
 		}
-		result->replace_list.insert(make_pair(column_name, GenerateExpression()));
-	}
-	if (RandomPercentage(50) || expression_depth > 0) {
-		result->columns = true;
-		if (RandomPercentage(50)) {
-			result->expr = GenerateLambda();
+		if (RandomPercentage(50) || expression_depth > 0) {
+			result->columns = true;
+			if (RandomPercentage(50)) {
+				result->expr = GenerateLambda();
+			}
 		}
 	}
 	return std::move(result);
@@ -1121,7 +1132,6 @@ unique_ptr<ParsedExpression> StatementGenerator::GenerateSubquery() {
 		return GenerateConstant();
 	}
 	auto subquery = make_uniq<SubqueryExpression>();
-
 	{
 		StatementGenerator child_generator(*this);
 		subquery->subquery = unique_ptr_cast<SQLStatement, SelectStatement>(child_generator.GenerateSelect());
