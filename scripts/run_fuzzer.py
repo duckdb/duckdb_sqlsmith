@@ -15,6 +15,7 @@ shell = None
 perform_checks = True
 dry = False
 max_queries = 1000
+verification = False
 for param in sys.argv:
     if param == '--sqlsmith':
         fuzzer = 'sqlsmith'
@@ -30,6 +31,8 @@ for param in sys.argv:
         db = 'emptyalltypes'
     elif param == '--no_checks':
         perform_checks = False
+    elif param == '--enable_verification':
+        verification = True
     elif param.startswith('--shell='):
         shell = param.replace('--shell=', '')
     elif param.startswith('--seed='):
@@ -72,7 +75,7 @@ def run_fuzzer_script(fuzzer):
     if fuzzer == 'sqlsmith':
         return "call sqlsmith(max_queries=${MAX_QUERIES}, seed=${SEED}, verbose_output=1, log='${LAST_LOG_FILE}', complete_log='${COMPLETE_LOG_FILE}');"
     elif fuzzer == 'duckfuzz':
-        return "call fuzzyduck(max_queries=${MAX_QUERIES}, seed=${SEED}, verbose_output=1, log='${LAST_LOG_FILE}', complete_log='${COMPLETE_LOG_FILE}');"
+        return "call fuzzyduck(max_queries=${MAX_QUERIES}, seed=${SEED}, verbose_output=1, log='${LAST_LOG_FILE}', complete_log='${COMPLETE_LOG_FILE}', enable_verification='${ENABLE_VERIFICATION}');"
     elif fuzzer == 'duckfuzz_functions':
         return "call fuzz_all_functions(seed=${SEED}, verbose_output=1, log='${LAST_LOG_FILE}', complete_log='${COMPLETE_LOG_FILE}');"
     else:
@@ -123,6 +126,7 @@ fuzzer = (
     .replace('${LAST_LOG_FILE}', last_query_log_file)
     .replace('${COMPLETE_LOG_FILE}', complete_log_file)
     .replace('${SEED}', str(seed))
+    .replace('${ENABLE_VERIFICATION}', str(verification))
 )
 
 print(load_script)
