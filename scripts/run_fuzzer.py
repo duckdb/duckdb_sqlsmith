@@ -31,7 +31,7 @@ for param in sys.argv:
         db = 'emptyalltypes'
     elif param == '--no_checks':
         perform_checks = False
-    elif param == '--enable_verification':
+    elif param.startswith('--enable_verification'):
         verification = param.replace('--enable_verification=', '').lower() == 'true'
     elif param.startswith('--shell='):
         shell = param.replace('--shell=', '')
