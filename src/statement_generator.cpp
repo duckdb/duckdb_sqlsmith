@@ -92,24 +92,43 @@ std::shared_ptr<GeneratorContext> StatementGenerator::GetDatabaseState(ClientCon
 	return result;
 }
 
+class RandomsConfig {
+public:
+	idx_t select_percentage = 60;
+	idx_t attach_percentage = 40;
+	idx_t attach_use_percentage = 50;
+	idx_t detach_percentage = 60;
+	idx_t set_percentage = 30;
+	idx_t delete_percentage = 40;
+
+	RandomsConfig(){
+
+	};
+
+	void getConfigFromFile() {
+		// read file and update default values
+	}
+};
+
 unique_ptr<SQLStatement> StatementGenerator::GenerateStatement() {
-	if (RandomPercentage(80)) {
+	RandomsConfig config = RandomsConfig();
+	if (RandomPercentage(config.select_percentage)) {
 		return GenerateStatement(StatementType::SELECT_STATEMENT);
 	}
-	if (RandomPercentage(40)) {
-		if (RandomPercentage(50)) {
+	if (RandomPercentage(config.attach_percentage)) {
+		if (RandomPercentage(config.attach_use_percentage)) {
 			// We call this directly so we have a higher chance to fuzz persistent databases
 			return GenerateAttachUse();
 		}
 		return GenerateStatement(StatementType::ATTACH_STATEMENT);
 	}
-	if (RandomPercentage(60)) {
+	if (RandomPercentage(config.detach_percentage)) {
 		return GenerateStatement(StatementType::DETACH_STATEMENT);
 	}
-	if (RandomPercentage(30)) {
+	if (RandomPercentage(config.set_percentage)) {
 		return GenerateStatement(StatementType::SET_STATEMENT);
 	}
-	if (RandomPercentage(40)) { //20
+	if (RandomPercentage(config.delete_percentage)) { //20
 		return GenerateStatement(StatementType::DELETE_STATEMENT);
 	}
 	return GenerateStatement(StatementType::CREATE_STATEMENT);

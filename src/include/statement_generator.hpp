@@ -40,6 +40,7 @@ public:
 	friend class ExpressionDepthChecker;
 	friend class AggregateChecker;
 	friend class WindowChecker;
+	friend class RandomsConfig;
 
 public:
 	StatementGenerator(ClientContext &context);
@@ -55,6 +56,8 @@ public:
 	bool RandomPercentage(idx_t percentage);
 	bool verification_enabled = false;
 	idx_t RandomValue(idx_t max);
+	
+
 	string GetRandomAttachedDataBase();
 	unique_ptr<SQLStatement> GenerateStatement(StatementType type); // came from private
 
