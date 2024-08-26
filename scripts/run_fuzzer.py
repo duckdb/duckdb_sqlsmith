@@ -16,6 +16,7 @@ perform_checks = True
 dry = False
 max_queries = 1000
 verification = False
+
 for param in sys.argv:
     if param == '--sqlsmith':
         fuzzer = 'sqlsmith'
@@ -108,6 +109,9 @@ if dry:
 else:
     current_errors = fuzzer_helper.extract_github_issues(shell, perform_checks)
 
+# Don't go on and fuzz if perform checks = true
+if perform_checks:
+    exit(0)
 
 last_query_log_file = 'sqlsmith.log'
 complete_log_file = 'sqlsmith.complete.log'
@@ -117,6 +121,7 @@ print(
         RUNNING {fuzzer} on {db}
 =========================================='''
 )
+
 
 load_script = create_db_script(db)
 fuzzer_name = get_fuzzer_name(fuzzer)

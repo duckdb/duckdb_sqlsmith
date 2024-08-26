@@ -1,4 +1,4 @@
-# name: test/sql_reduce.test
+# name: test/sql/sql_reduce.test
 # description: Test reduce SQL statement
 # group: [sqlsmith]
 
