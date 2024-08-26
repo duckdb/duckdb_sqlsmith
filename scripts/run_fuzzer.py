@@ -33,7 +33,7 @@ for param in sys.argv:
     elif param == '--no_checks':
         perform_checks = False
     elif param == '--enable_verification':
-        verification = param.replace('--enable_verification=', '').lower() == 'true'
+        verification = True
     elif param.startswith('--shell='):
         shell = param.replace('--shell=', '')
     elif param.startswith('--seed='):
