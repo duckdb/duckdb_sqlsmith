@@ -39,4 +39,4 @@ jobs:
       - name: Build and Test
         shell: bash
         run: |
-          make debug test
+          make test_debug
