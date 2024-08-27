@@ -16,6 +16,7 @@ class SQLStatement;
 class SelectStatement;
 class InsertStatement;
 class UpdateStatement;
+class PrepareStatement;
 class DeleteStatement;
 class TableRef;
 class SelectNode;
@@ -41,6 +42,7 @@ private:
 	void Simplify(SelectStatement &stmt);
 	void Simplify(InsertStatement &stmt);
 	void Simplify(UpdateStatement &stmt);
+	void Simplify(PrepareStatement &stmt);
 	void Simplify(DeleteStatement &stmt);
 
 	void Simplification();
