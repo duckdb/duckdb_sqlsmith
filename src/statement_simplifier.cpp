@@ -309,6 +309,7 @@ void StatementSimplifier::SimplifyExpression(duckdb::unique_ptr<ParsedExpression
 			SimplifyChildExpression(expr, case_check.then_expr);
 			SimplifyChildExpression(expr, case_check.when_expr);
 		}
+		SimplifyList(op.case_checks, false);
 		break;
 	}
 	case ExpressionClass::CAST: {
