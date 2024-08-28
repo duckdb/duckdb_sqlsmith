@@ -10,6 +10,7 @@ on:
 jobs:
   build-duckdb:
     name: Build DuckDB
+    # should be a valid tag, branch name or commit. After it gets merged, we can replace it with the branch name
     uses: duckdblabs/duckdb-fuzzer-ci/.github/workflows/reusable_build.yml@a718b91bfe729290ad0525722cd77651416d2046
     with:
       git_url: ${{ github.actor }}
@@ -30,5 +31,5 @@ jobs:
       fuzzer: ${{ matrix.fuzzer }}
       data: ${{ matrix.data }}
       timeout-minutes: 20
-      dry: dry
+      dry: --dry
       max_queries: 10
