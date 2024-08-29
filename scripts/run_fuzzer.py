@@ -40,7 +40,7 @@ for param in sys.argv:
     elif param.startswith('--max_queries='):
         max_queries = int(param.replace('--max_queries=', ''))
     elif param.startswith('--dry'):
-        dry = True
+        dry = param.replace('--dry=', '').lower() == 'true'
 
 if fuzzer is None:
     print("Unrecognized fuzzer to run, expected e.g. --sqlsmith or --duckfuzz")
