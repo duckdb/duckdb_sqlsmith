@@ -25,6 +25,12 @@ jobs:
       matrix:
         fuzzer: [duckfuzz, sqlsmith, duckfuzz_functions]
         data: [emptyalltypes]
+        enable_verification: [true, false]
+        exclude:
+          - enable_verification: true
+            fuzzer: sqlsmith
+          - enable_verification: true
+            fuzzer: duckfuzz_functions
     uses: duckdblabs/duckdb-fuzzer-ci/.github/workflows/fuzz_duckdb.yml@main
     with:
       fuzzer: ${{ matrix.fuzzer }}
@@ -32,3 +38,4 @@ jobs:
       timeout-minutes: 20
       max_queries: 10
       dry: false
+      enable_verification: ${{ matrix.enable_verification }}
