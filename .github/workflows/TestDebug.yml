@@ -22,7 +22,6 @@ jobs:
       BUILD_PARQUET: 1
       BUILD_JEMALLOC: 1
       CRASH_ON_ASSERT: 1
-      GEN: ninja
 
     steps:
       - name: Dependencies
