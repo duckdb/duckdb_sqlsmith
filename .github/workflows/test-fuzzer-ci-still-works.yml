@@ -10,88 +10,31 @@ on:
 jobs:
   build-duckdb:
     name: Build DuckDB
-    runs-on: ubuntu-latest
-    timeout-minutes: 120
-    outputs:
-      duckdb-hash: ${{ steps.find-hash.outputs.hash }}
-    env:
-      BUILD_ICU: 1
-      BUILD_JSON: 1
-      BUILD_TPCH: 1
-      BUILD_TPCDS: 1
-      BUILD_PARQUET: 1
-      BUILD_JEMALLOC: 1
-      CRASH_ON_ASSERT: 1
-      GEN: ninja
-
-    steps:
-      - name: Dependencies
-        shell: bash
-        run: sudo apt-get update -y -qq && sudo apt-get install -y -qq ninja-build ccache
-
-      - uses: actions/checkout@v3
-        with:
-          repository: duckdb/duckdb
-          fetch-depth: 0
-
-      - name: Setup Ccache
-        uses: hendrikmuhs/ccache-action@main
-
-      - id: find-hash
-        run: echo "::set-output name=hash::$(git rev-parse HEAD)"
-
-      - name: create build sqlsmith extension file
-        shell: bash
-        run: |
-          echo "duckdb_extension_load(sqlsmith 
-            GIT_URL https://github.com/duckdb/duckdb_sqlsmith 
-            GIT_TAG main 
-          )" > sqlsmith.cmake
-
-      - name: Build
-        shell: bash
-        run: |
-          EXTENSION_CONFIGS="sqlsmith.cmake" make debug
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: duckdb
-          path: build/debug/duckdb
+    uses: duckdblabs/duckdb-fuzzer-ci/.github/workflows/reusable_workflows/build_fuzzer.yml@main
+    with:
+      git_url: ${{ github.actor }}
+      git_tag: ${{ github.ref_name }}
+      timeout-minutes: 120
 
   fuzzer:
     name: Fuzzer
     needs:
     - build-duckdb
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
         fuzzer: [duckfuzz, sqlsmith, duckfuzz_functions]
         data: [emptyalltypes]
-
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          path: duckdb_sqlsmith
-          fetch-depth: 0
-
-      - name: Download a single artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: duckdb
-
-      - name: Fuzz
-        shell: bash
-        run: |
-            chmod +x duckdb
-            runtime="1 minute"
-            endtime=$(date -ud "$runtime" +%s)
-
-            cd duckdb_sqlsmith
-            while [[ $(date -u +%s) -le $endtime ]]
-            do
-                echo "Time Now: `date +%H:%M:%S`"
-                python3 scripts/run_fuzzer.py --no_checks --${{ matrix.fuzzer }} --${{ matrix.data }} --shell=../duckdb --dry --max_queries=10
-            done
-
+        enable_verification: [true, false]
+        exclude:
+          - enable_verification: true
+            fuzzer: sqlsmith
+          - enable_verification: true
+            fuzzer: duckfuzz_functions
+    uses: duckdblabs/duckdb-fuzzer-ci/.github/workflows/reusable_workflows/fuzz_duckdb.yml@main
+    with:
+      fuzzer: ${{ matrix.fuzzer }}
+      data: ${{ matrix.data }}
+      timeout-minutes: 20
+      max_queries: 10
+      enable_verification: ${{ matrix.enable_verification }}
