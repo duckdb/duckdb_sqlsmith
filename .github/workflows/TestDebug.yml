@@ -36,7 +36,10 @@ jobs:
       - name: Setup Ccache
         uses: hendrikmuhs/ccache-action@main
 
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
+
       - name: Build and Test
         shell: bash
         run: |
-          make test_debug
+          GEN=ninja make -j 2 test_debug
