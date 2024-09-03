@@ -2,8 +2,6 @@
 # description: Test reduce SQL statement
 # group: [sqlsmith]
 
-mode skip
-
 require sqlsmith
 
 query I
