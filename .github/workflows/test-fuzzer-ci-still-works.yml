@@ -12,8 +12,8 @@ jobs:
     name: Build DuckDB
     uses: duckdblabs/duckdb-fuzzer-ci/.github/workflows/build_fuzzer.yml@main
     with:
-      git_url: ${{ github.repository }}
-      git_tag: ${{ github.ref_name }}
+      git_url: ${{ github.actor }}/${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
+      git_tag: ${{ github.sha }}
       timeout-minutes: 120
 
   fuzzer:
