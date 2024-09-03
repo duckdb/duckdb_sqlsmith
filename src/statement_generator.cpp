@@ -92,24 +92,6 @@ std::shared_ptr<GeneratorContext> StatementGenerator::GetDatabaseState(ClientCon
 	return result;
 }
 
-class RandomsConfig {
-public:
-	idx_t select_percentage = 60;
-	idx_t attach_percentage = 40;
-	idx_t attach_use_percentage = 50;
-	idx_t detach_percentage = 60;
-	idx_t set_percentage = 30;
-	idx_t delete_percentage = 40;
-
-	RandomsConfig(){
-
-	};
-
-	void getConfigFromFile() {
-		// read file and update default values
-	}
-};
-
 unique_ptr<SQLStatement> StatementGenerator::GenerateStatement() {
 	RandomsConfig config = RandomsConfig();
 	if (RandomPercentage(config.select_percentage)) {

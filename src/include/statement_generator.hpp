@@ -11,6 +11,7 @@
 #include "duckdb.hpp"
 #include "duckdb/parser/parsed_data/detach_info.hpp"
 #include "duckdb/parser/query_node.hpp"
+#include "src/include/randoms_config.hpp"
 
 #define TESTING_DIRECTORY_NAME "duckdb_unittest_tempdir"
 
@@ -40,7 +41,7 @@ public:
 	friend class ExpressionDepthChecker;
 	friend class AggregateChecker;
 	friend class WindowChecker;
-	friend class RandomsConfig;
+	RandomsConfig random_config;
 
 public:
 	StatementGenerator(ClientContext &context);
