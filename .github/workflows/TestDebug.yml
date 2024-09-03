@@ -36,9 +36,6 @@ jobs:
       - name: Setup Ccache
         uses: hendrikmuhs/ccache-action@main
 
-      - name: Setup upterm session
-        uses: lhotari/action-upterm@v1
-
       - name: Build and Test
         shell: bash
         run: |
