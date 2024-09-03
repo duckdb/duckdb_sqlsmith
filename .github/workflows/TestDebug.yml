@@ -39,4 +39,4 @@ jobs:
       - name: Build and Test
         shell: bash
         run: |
-          GEN=ninja make -j 2 test_debug
+          make test_debug
