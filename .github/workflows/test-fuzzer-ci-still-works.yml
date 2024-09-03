@@ -8,22 +8,12 @@ on:
       - '!main'
 
 jobs:
-  get-branch-name:
-    name: Get branch get-branch-name
-    shell: bash
-    run: |
-      echo "head ref ="
-      echo ${{ github.head_ref }}
-      echo "ref ="
-      echo ${{ github.ref }}
-      echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
-
   build-duckdb:
     name: Build DuckDB
     uses: duckdblabs/duckdb-fuzzer-ci/.github/workflows/build_fuzzer.yml@main
     with:
       git_url: ${{ github.actor }}/duckdb_sqlsmith
-      git_tag: ${{ github.sha }}
+      git_tag: ${{ github.head_ref }}
       timeout-minutes: 120
 
   fuzzer:
