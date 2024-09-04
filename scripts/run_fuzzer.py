@@ -13,7 +13,7 @@ fuzzer = None
 db = None
 shell = None
 perform_checks = True
-no-git-checks = False
+no_git_checks = False
 max_queries = 1000
 verification = False
 
@@ -41,7 +41,7 @@ for param in sys.argv:
     elif param.startswith('--max_queries='):
         max_queries = int(param.replace('--max_queries=', ''))
     elif param.startswith('--no-git-checks'):
-        no-git-checks = param.replace('--no-git-checks=', '').lower() == 'true'
+        no_git_checks = param.replace('--no-git-checks=', '').lower() == 'true'
 
 if fuzzer is None:
     print("Unrecognized fuzzer to run, expected e.g. --sqlsmith or --duckfuzz")
@@ -104,7 +104,7 @@ def run_shell_command(cmd):
 
 # first get a list of all github issues, and check if we can still reproduce them
 
-if no-git-checks:
+if no_git_checks:
     current_errors = []
 else:
     current_errors = fuzzer_helper.extract_github_issues(shell, perform_checks)
@@ -217,5 +217,5 @@ print(f"After reducing: the below sql causes an internal error \n `{cmd}`")
 print(f"{error_msg}")
 print(f"================MARKER====================")
 
-if not no-git-checks:
+if not no_git_checks:
     fuzzer_helper.file_issue(cmd, error_msg, fuzzer_name, seed, git_hash)
