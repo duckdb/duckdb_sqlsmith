@@ -13,30 +13,23 @@
 namespace duckdb {
 
 class RandomNumsConfig {
-private:
-
-    idx_t select_percentage = 60;
-	idx_t attach_percentage = 40;
-	idx_t attach_use_percentage = 50;
-	idx_t detach_percentage = 60;
-	idx_t set_percentage = 30;
-	idx_t delete_percentage = 40;
-
 public:
-    RandomNumsConfig() {
 
-    };
+	idx_t select_percentage;
+	idx_t attach_percentage;
+	idx_t attach_use_percentage;
+	idx_t detach_percentage;
+	idx_t set_percentage;
+	idx_t delete_percentage;
+
+    RandomNumsConfig();
 	~RandomNumsConfig();
 
+	// is it better to return an object initialised with fetched/default params?
 	// read file and update default values
-	void getConfigFromFile(duckdb_string_t file_path) {
-
-	}
-
+	void GetConfigFromFile(duckdb_string_t file_path);
 	// set default values
-	void GetDefaultConfig() {
-		
-	}
+	void GetDefaultConfig();
 
 };
 

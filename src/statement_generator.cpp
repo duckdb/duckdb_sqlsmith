@@ -25,6 +25,7 @@
 #include "duckdb/parser/statement/set_statement.hpp"
 #include "duckdb/parser/statement/update_statement.hpp"
 #include "duckdb/parser/tableref/list.hpp"
+#include "random_nums_config.hpp"
 
 namespace duckdb {
 
