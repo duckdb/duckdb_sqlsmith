@@ -37,4 +37,5 @@ jobs:
       data: ${{ matrix.data }}
       timeout-minutes: 20
       max_queries: 10
+      no-git-checks: True
       enable_verification: ${{ matrix.enable_verification }}
