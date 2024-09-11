@@ -23,14 +23,17 @@ public:
 	idx_t delete_percentage;
 
     RandomNumsConfig();
+    RandomNumsConfig(string &file_path);
 	~RandomNumsConfig();
 
-	// is it better to return an object initialised with fetched/default params?
-	// read file and update default values
-	void GetConfigFromFile(duckdb_string_t file_path);
 	// set default values
 	void GetDefaultConfig();
-
+	// is it better to return an object initialised with fetched/default params?
+	// read file and update default values
+	void GetConfigFromFile(string &file_path);
 };
 
 } // namespace duckdb
+
+
+// duckdb/common/serializer/read_stream.hpp
