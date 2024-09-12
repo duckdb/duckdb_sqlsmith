@@ -10,10 +10,10 @@ on:
 jobs:
   build-duckdb:
     name: Build DuckDB
-    uses: duckdblabs/duckdb-fuzzer-ci/.github/workflows/reusable_workflows/build_fuzzer.yml@main
+    uses: duckdblabs/duckdb-fuzzer-ci/.github/workflows/build_fuzzer.yml@main
     with:
-      git_url: ${{ github.actor }}
-      git_tag: ${{ github.ref_name }}
+      git_url: ${{ github.actor }}/duckdb_sqlsmith
+      git_tag: ${{ github.head_ref }}
       timeout-minutes: 120
 
   fuzzer:
@@ -31,7 +31,7 @@ jobs:
             fuzzer: sqlsmith
           - enable_verification: true
             fuzzer: duckfuzz_functions
-    uses: duckdblabs/duckdb-fuzzer-ci/.github/workflows/reusable_workflows/fuzz_duckdb.yml@main
+    uses: duckdblabs/duckdb-fuzzer-ci/.github/workflows/fuzz_duckdb.yml@main
     with:
       fuzzer: ${{ matrix.fuzzer }}
       data: ${{ matrix.data }}
