@@ -13,9 +13,10 @@ fuzzer = None
 db = None
 shell = None
 perform_checks = True
-dry = False
+no-git-checks = False
 max_queries = 1000
 verification = False
+
 for param in sys.argv:
     if param == '--sqlsmith':
         fuzzer = 'sqlsmith'
@@ -31,16 +32,16 @@ for param in sys.argv:
         db = 'emptyalltypes'
     elif param == '--no_checks':
         perform_checks = False
-    elif param == '--enable_verification':
-        verification = True
+    elif param.startswith('--enable_verification'):
+        verification = param.replace('--enable_verification=', '').lower() == 'true'
     elif param.startswith('--shell='):
         shell = param.replace('--shell=', '')
     elif param.startswith('--seed='):
         seed = int(param.replace('--seed=', ''))
     elif param.startswith('--max_queries='):
         max_queries = int(param.replace('--max_queries=', ''))
-    elif param.startswith('--dry'):
-        dry = True
+    elif param.startswith('--no-git-checks'):
+        no-git-checks = param.replace('--no-git-checks=', '').lower() == 'true'
 
 if fuzzer is None:
     print("Unrecognized fuzzer to run, expected e.g. --sqlsmith or --duckfuzz")
@@ -103,11 +104,14 @@ def run_shell_command(cmd):
 
 # first get a list of all github issues, and check if we can still reproduce them
 
-if dry:
+if no-git-checks:
     current_errors = []
 else:
     current_errors = fuzzer_helper.extract_github_issues(shell, perform_checks)
 
+# Don't go on and fuzz if perform checks = true
+if perform_checks:
+    exit(0)
 
 last_query_log_file = 'sqlsmith.log'
 complete_log_file = 'sqlsmith.complete.log'
@@ -117,6 +121,7 @@ print(
         RUNNING {fuzzer} on {db}
 =========================================='''
 )
+
 
 load_script = create_db_script(db)
 fuzzer_name = get_fuzzer_name(fuzzer)
@@ -212,5 +217,5 @@ print(f"After reducing: the below sql causes an internal error \n `{cmd}`")
 print(f"{error_msg}")
 print(f"================MARKER====================")
 
-if not dry:
+if not no-git-checks:
     fuzzer_helper.file_issue(cmd, error_msg, fuzzer_name, seed, git_hash)

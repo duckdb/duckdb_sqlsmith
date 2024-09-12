@@ -8,6 +8,7 @@
 #include "duckdb/parser/expression/list.hpp"
 #include "duckdb/parser/statement/delete_statement.hpp"
 #include "duckdb/parser/statement/insert_statement.hpp"
+#include "duckdb/parser/statement/prepare_statement.hpp"
 #include "duckdb/parser/statement/update_statement.hpp"
 #include "duckdb/parser/statement/select_statement.hpp"
 #endif
@@ -308,6 +309,7 @@ void StatementSimplifier::SimplifyExpression(duckdb::unique_ptr<ParsedExpression
 			SimplifyChildExpression(expr, case_check.then_expr);
 			SimplifyChildExpression(expr, case_check.when_expr);
 		}
+		SimplifyList(op.case_checks, false);
 		break;
 	}
 	case ExpressionClass::CAST: {
@@ -423,6 +425,10 @@ void StatementSimplifier::Simplify(UpdateSetInfo &info) {
 	}
 }
 
+void StatementSimplifier::Simplify(PrepareStatement &stmt) {
+	Simplify(*stmt.statement);
+}
+
 void StatementSimplifier::Simplify(UpdateStatement &stmt) {
 	Simplify(stmt.cte_map);
 	SimplifyOptional(stmt.from_table);
@@ -444,6 +450,9 @@ void StatementSimplifier::Simplify(SQLStatement &stmt) {
 		break;
 	case StatementType::DELETE_STATEMENT:
 		Simplify(stmt.Cast<DeleteStatement>());
+		break;
+	case StatementType::PREPARE_STATEMENT:
+		Simplify(stmt.Cast<PrepareStatement>());
 		break;
 	default:
 		throw InvalidInputException("Expected a single SELECT, INSERT or UPDATE statement");

@@ -1,4 +1,4 @@
-# name: test/sql_reduce.test
+# name: test/sql/sql_reduce.test
 # description: Test reduce SQL statement
 # group: [sqlsmith]
 
@@ -77,3 +77,16 @@ DELETE FROM a WHERE (i < 5000)
 DELETE FROM a WHERE (i >= 2000)
 DELETE FROM a WHERE (i AND (i < 5000))
 DELETE FROM a WHERE NULL
+
+query I
+SELECT * FROM reduce_sql_statement('PREPARE v1 AS SELECT a, b FROM tbl') ORDER BY 1
+----
+PREPARE v1 AS SELECT NULL, b FROM tbl
+PREPARE v1 AS SELECT NULL, b FROM tbl
+PREPARE v1 AS SELECT a FROM tbl
+PREPARE v1 AS SELECT a, NULL FROM tbl
+PREPARE v1 AS SELECT a, NULL FROM tbl
+PREPARE v1 AS SELECT a, b
+PREPARE v1 AS SELECT a, b FROM tbl
+PREPARE v1 AS SELECT a, b FROM tbl
+PREPARE v1 AS SELECT b FROM tbl

@@ -18,6 +18,7 @@ get_reduced_query = '''
 SELECT * FROM reduce_sql_statement('${QUERY}');
 '''
 
+verbose = False
 
 class MultiStatementManager:
     delimiter = ';'
@@ -33,7 +34,8 @@ class MultiStatementManager:
                 self.statements.append(stmt.strip() + ";")
 
     def is_multi_statement(sql_statement):
-        if len(sql_statement.split(';')) > 1:
+        splits = [x for x in sql_statement.split(';') if len(x.strip()) > 0]
+        if len(splits) > 1:
             return True
         return False
 
@@ -45,10 +47,12 @@ def sanitize_error(err):
     err = re.sub(r'Error: near line \d+: ', '', err)
     err = err.replace(os.getcwd() + '/', '')
     err = err.replace(os.getcwd(), '')
+    err = re.sub(r'LINE \d+:.*\n', '', err)
+    err = re.sub(r' *\^ *', '', err)
     if 'AddressSanitizer' in err:
         match = re.search(r'[ \t]+[#]0 ([A-Za-z0-9]+) ([^\n]+)', err).groups()[1]
         err = 'AddressSanitizer error ' + match
-    return err
+    return err.strip()
 
 
 def run_shell_command(shell, cmd):
@@ -69,7 +73,13 @@ def get_reduced_sql(shell, sql_query):
         raise Exception("Failed to reduce query")
     reduce_candidates = []
     for line in stdout.split('\n'):
-        reduce_candidates.append(line.strip('"').replace('""', '"'))
+        if len(line) <= 2:
+            continue
+        if line[0] == '"':
+            line = line[1:]
+        if line[len(line) - 1] == '"':
+            line = line[:len(line) - 1]
+        reduce_candidates.append(line.replace('""', '"'))
     return reduce_candidates[1:]
 
 
@@ -95,6 +105,15 @@ def reduce(sql_query, data_load, shell, error_msg, max_time_seconds=300):
                 print(sql_query)
                 print("=======================")
                 break
+            elif verbose:
+                print("Failed to reduce query")
+                print("=======================")
+                print(reduce_candidate)
+                print("=====Target error======")
+                print(error_msg)
+                print("=====Actual error======")
+                print(new_error)
+                print("=======================")
         if not found_new_candidate:
             break
     return sql_query
@@ -271,6 +290,8 @@ if __name__ == "__main__":
     parser.add_argument(
         '--max-time', dest='max_time', action='store', help='Maximum time in seconds to run the reducer', default=300
     )
+    parser.add_argument(
+        '--verbose', dest='verbose', action='store_true', help='Verbose output')
 
     args = parser.parse_args()
     print("Starting reduce process")
@@ -278,6 +299,7 @@ if __name__ == "__main__":
     shell = args.shell
     data_load = open(args.load).read()
     sql_query = open(args.exec).read()
+    verbose = args.verbose
     (stdout, stderr, returncode) = run_shell_command(shell, data_load + sql_query)
     expected_error = sanitize_error(stderr).strip()
     if len(expected_error) == 0:
