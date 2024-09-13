@@ -11,6 +11,7 @@
 #include "duckdb.hpp"
 #include "duckdb/parser/parsed_data/detach_info.hpp"
 #include "duckdb/parser/query_node.hpp"
+#include "random_nums_config.hpp"
 
 #define TESTING_DIRECTORY_NAME "duckdb_unittest_tempdir"
 
@@ -47,7 +48,7 @@ public:
 	~StatementGenerator();
 
 public:
-	unique_ptr<SQLStatement> GenerateStatement();
+	unique_ptr<SQLStatement> GenerateStatement(RandomNumsConfig config);
 
 	vector<string> GenerateAllFunctionCalls();
 

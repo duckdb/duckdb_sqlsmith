@@ -25,7 +25,6 @@
 #include "duckdb/parser/statement/set_statement.hpp"
 #include "duckdb/parser/statement/update_statement.hpp"
 #include "duckdb/parser/tableref/list.hpp"
-#include "random_nums_config.hpp"
 
 namespace duckdb {
 
@@ -93,10 +92,10 @@ std::shared_ptr<GeneratorContext> StatementGenerator::GetDatabaseState(ClientCon
 	return result;
 }
 
-unique_ptr<SQLStatement> StatementGenerator::GenerateStatement() {
+unique_ptr<SQLStatement> StatementGenerator::GenerateStatement(RandomNumsConfig config) {
 
-	string file_path = "config.json";
-	RandomNumsConfig config = RandomNumsConfig(file_path);
+	// string file_path = "config.json";
+	// RandomNumsConfig config = RandomNumsConfig(file_path);
 	if (RandomPercentage(config.select_percentage)) {
 		return GenerateStatement(StatementType::SELECT_STATEMENT);
 	}

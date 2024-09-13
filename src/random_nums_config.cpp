@@ -1,4 +1,5 @@
 #include "include/random_nums_config.hpp"
+
 #include "duckdb/common/string_util.hpp"
 #include "duckdb/common/local_file_system.hpp"
 
@@ -13,9 +14,9 @@ RandomNumsConfig::RandomNumsConfig() {
     GetDefaultConfig();
 }
 
-RandomNumsConfig::RandomNumsConfig(string &file_path) {
+RandomNumsConfig::RandomNumsConfig(string &json_string) {
     GetDefaultConfig();
-    GetConfigFromFile(file_path);
+    GetConfigFromFile(json_string);
 }
 
 RandomNumsConfig::~RandomNumsConfig() {
@@ -30,29 +31,28 @@ void RandomNumsConfig::GetDefaultConfig() {
     delete_percentage = 40;
 }
 
-void RandomNumsConfig::GetConfigFromFile(string &file_path) {
+void RandomNumsConfig::GetConfigFromFile(string &json_string) {
     // open and read file into a string &
-    string result;
-    std::ifstream open_file(file_path);
-    if (!open_file.is_open()) {
-        std::cerr << "Could not open the file!" << std::endl;
-    }
-    std::string line;
-    while (std::getline(open_file, line)) {
-        if (open_file.fail()) {
-            std::cerr << "Error reading file!" << std::endl;
-        }
-        result.append(line);
-    }
+    // string result;
+    // std::ifstream open_file(file_path);
+    // if (!open_file.is_open()) {
+    //     std::cerr << "Could not open the file!" << std::endl;
+    // }
+    // std::string line;
+    // while (std::getline(open_file, line)) {
+    //     if (open_file.fail()) {
+    //         std::cerr << "Error reading file!" << std::endl;
+    //     }
+    //     result.append(line);
+    // }
 
     unordered_map<string, string> json;
     try {
-        json = StringUtil::ParseJSONMap(result);
+        json = StringUtil::ParseJSONMap(json_string);
     } catch (std::exception &ex) {
-        throw IOException("Couldn't parse JSON file with percentages config.");
+        throw IOException("Couldn't parse JSON string containing percentages config.");
     }
-    open_file.close();
-    
+
     select_percentage = stoi(json.find("select_percentage")->second);
     attach_percentage = stoi(json.find("attach_percentage")->second);
     attach_use_percentage = stoi(json.find("attach_use_percentage")->second);
