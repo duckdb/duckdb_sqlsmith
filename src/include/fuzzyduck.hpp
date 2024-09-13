@@ -10,6 +10,7 @@
 
 #include "duckdb.hpp"
 #include "duckdb/parser/query_node.hpp"
+#include "random_nums_config.hpp"
 
 namespace duckdb {
 struct FileHandle;
@@ -28,6 +29,7 @@ public:
 	bool enable_verification = false;
 	idx_t timeout = 30;
 	string randoms_config_filepath;
+	RandomNumsConfig config = RandomNumsConfig();
 
 public:
 	void Fuzz();

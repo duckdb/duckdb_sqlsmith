@@ -31,10 +31,24 @@ void FuzzyDuck::BeginFuzzing() {
 	if (enable_verification) {
 		RunQuery("PRAGMA enable_verification");
 	}
-	// if (!randoms_config_filepath.empty()) {
-	// 	randoms_config_handle = fs.OpenFile(randoms_config_filepath, FileFlags::FILE_FLAGS_READ);
-		
-	// }
+	if (!randoms_config_filepath.empty()) {
+		randoms_config_handle = fs.OpenFile(randoms_config_filepath, FileFlags::FILE_FLAGS_READ);
+		// read	config and initialize the RandomNumsConfig here
+		// string file_path = "config.json";
+		string json_string;
+		if (randoms_config_handle) {
+			auto file_size = fs.GetFileSize(*randoms_config_handle);
+			char buffer[1024];
+			auto bytes_read = fs.Read(*randoms_config_handle, buffer, 1024);
+			if (bytes_read < file_size) {
+				throw CatalogException("Cannot read the file \"%s\"", randoms_config_filepath);
+			}
+			json_string = buffer;
+			config = RandomNumsConfig(json_string);
+
+		} 
+
+	}
 }
 
 void FuzzyDuck::EndFuzzing() {
@@ -85,12 +99,12 @@ string FuzzyDuck::GenerateQuery() {
 		LogTask("Generating Multi-Statement query of " + to_string(number_of_statements) + " statements with seed " +
 			to_string(seed));
 		for (idx_t i = 0; i < number_of_statements; i++) {
-			statement += generator.GenerateStatement()->ToString() + "; ";
+			statement += generator.GenerateStatement(config)->ToString() + "; ";
 		}
 	} else {
 		// normal statement
 		LogTask("Generating Single-Statement query with seed " + to_string(seed));
-		statement = generator.GenerateStatement()->ToString();
+		statement = generator.GenerateStatement(config)->ToString();
 	}
 	return statement;
 }
