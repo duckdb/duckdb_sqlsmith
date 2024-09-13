@@ -27,6 +27,7 @@ public:
 	bool verbose_output = false;
 	bool enable_verification = false;
 	idx_t timeout = 30;
+	string randoms_config_filepath;
 
 public:
 	void Fuzz();
@@ -50,6 +51,7 @@ private:
 
 private:
 	unique_ptr<FileHandle> complete_log_handle;
+	unique_ptr<FileHandle> randoms_config_handle;
 };
 
 } // namespace duckdb

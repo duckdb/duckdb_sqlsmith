@@ -22,8 +22,8 @@ void FuzzyDuck::BeginFuzzing() {
 	if (max_queries == 0) {
 		throw BinderException("Provide a max_queries argument greater than 0");
 	}
+	auto &fs = FileSystem::GetFileSystem(context);
 	if (!complete_log.empty()) {
-		auto &fs = FileSystem::GetFileSystem(context);
 		TryRemoveFile(complete_log);
 		complete_log_handle =
 			fs.OpenFile(complete_log, FileFlags::FILE_FLAGS_WRITE | FileFlags::FILE_FLAGS_FILE_CREATE_NEW);
@@ -31,11 +31,18 @@ void FuzzyDuck::BeginFuzzing() {
 	if (enable_verification) {
 		RunQuery("PRAGMA enable_verification");
 	}
+	// if (!randoms_config_filepath.empty()) {
+	// 	randoms_config_handle = fs.OpenFile(randoms_config_filepath, FileFlags::FILE_FLAGS_READ);
+		
+	// }
 }
 
 void FuzzyDuck::EndFuzzing() {
 	if (complete_log_handle) {
 		complete_log_handle->Close();
+	}
+	if (randoms_config_handle) {
+		randoms_config_handle->Close();
 	}
 }
 
