@@ -95,7 +95,7 @@ std::shared_ptr<GeneratorContext> StatementGenerator::GetDatabaseState(ClientCon
 
 unique_ptr<SQLStatement> StatementGenerator::GenerateStatement() {
 
-	string file_path = "test/config_copy.json";
+	string file_path = "config.json";
 	RandomNumsConfig config = RandomNumsConfig(file_path);
 	if (RandomPercentage(config.select_percentage)) {
 		return GenerateStatement(StatementType::SELECT_STATEMENT);
