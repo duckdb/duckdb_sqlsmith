@@ -35,6 +35,9 @@ void FuzzyDuck::BeginFuzzing() {
 		randoms_config_handle = fs.OpenFile(randoms_config_filepath, FileFlags::FILE_FLAGS_READ);
 		const char *file_path = "config.json";
 		auto config = GetConfigFromFile(file_path);
+		if (!config.size()) {
+			config = GetDefaultConfig();
+		}
 	}
 }
 

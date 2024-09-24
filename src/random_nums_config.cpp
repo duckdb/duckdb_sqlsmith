@@ -49,7 +49,7 @@ unordered_map<RandomPercentagesEnum, idx_t> GetConfigFromFile(const char *json_s
             }
         }
     } else {
-        throw IOException("Couldn't read JSON with percentages config.");
+        // Couldn't read JSON with percentages config
         yyjson_doc_free(doc);
         return GetDefaultConfig();
     }
