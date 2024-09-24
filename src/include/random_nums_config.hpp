@@ -1,39 +1,30 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //                         DuckDB
-//
+
 // random_nums_config.hpp
-//
-//
-//===----------------------------------------------------------------------===//
+
+
+// ===----------------------------------------------------------------------===//
 
 #pragma once
 
 #include "duckdb.hpp"
+#include "percentages_enum.hpp"
+#include "yyjson.hpp"
 
 namespace duckdb {
 
-class RandomNumsConfig {
-public:
-
-	idx_t select_percentage;
-	idx_t attach_percentage;
-	idx_t attach_use_percentage;
-	idx_t detach_percentage;
-	idx_t set_percentage;
-	idx_t delete_percentage;
-
-    RandomNumsConfig();
-    RandomNumsConfig(string &json_string);
-	~RandomNumsConfig();
-
-	// set default values
-	void GetDefaultConfig();
-	// is it better to return an object initialised with fetched/default params?
-	// read file and update default values
-	void GetConfigFromFile(string &json_string);
+enum class RandomNumsConfig : idx_t {
+	SELECT = 0,
+    ATTACH = 1,
+    ATTACH_USE = 2,
+    DETACH = 3,
+    SET = 4,
+    DELETE = 5,
 };
 
+unordered_map<RandomNumsConfig, idx_t> GetDefaultConfig();
+unordered_map<RandomNumsConfig, idx_t> GetConfigFromFile(const char *json_string);
+string PercentagesEnumTypeToString(RandomNumsConfig type);
+
 } // namespace duckdb
-
-
-// duckdb/common/serializer/read_stream.hpp

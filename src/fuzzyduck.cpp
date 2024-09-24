@@ -33,21 +33,8 @@ void FuzzyDuck::BeginFuzzing() {
 	}
 	if (!randoms_config_filepath.empty()) {
 		randoms_config_handle = fs.OpenFile(randoms_config_filepath, FileFlags::FILE_FLAGS_READ);
-		// read	config and initialize the RandomNumsConfig here
-		// string file_path = "config.json";
-		string json_string;
-		if (randoms_config_handle) {
-			auto file_size = fs.GetFileSize(*randoms_config_handle);
-			char buffer[1024];
-			auto bytes_read = fs.Read(*randoms_config_handle, buffer, 1024);
-			if (bytes_read < file_size) {
-				throw CatalogException("Cannot read the file \"%s\"", randoms_config_filepath);
-			}
-			json_string = buffer;
-			config = RandomNumsConfig(json_string);
-
-		} 
-
+		const char *file_path = "config.json";
+		auto config = GetConfigFromFile(file_path);
 	}
 }
 
