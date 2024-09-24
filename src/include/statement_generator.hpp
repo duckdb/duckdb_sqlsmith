@@ -48,7 +48,7 @@ public:
 	~StatementGenerator();
 
 public:
-	unique_ptr<SQLStatement> GenerateStatement(unordered_map<RandomNumsConfig, idx_t> config);
+	unique_ptr<SQLStatement> GenerateStatement(unordered_map<RandomPercentagesEnum, idx_t> config);
 
 	vector<string> GenerateAllFunctionCalls();
 

@@ -92,27 +92,24 @@ std::shared_ptr<GeneratorContext> StatementGenerator::GetDatabaseState(ClientCon
 	return result;
 }
 
-unique_ptr<SQLStatement> StatementGenerator::GenerateStatement(unordered_map<RandomNumsConfig, idx_t> config) {
-
-	// string file_path = "config.json";
-	// RandomNumsConfig config = RandomNumsConfig(file_path);
-	if (RandomPercentage(config[RandomNumsConfig::SELECT])) {
+unique_ptr<SQLStatement> StatementGenerator::GenerateStatement(unordered_map<RandomPercentagesEnum, idx_t> config) {
+	if (RandomPercentage(config[RandomPercentagesEnum::SELECT])) {
 		return GenerateStatement(StatementType::SELECT_STATEMENT);
 	}
-	if (RandomPercentage(config[RandomNumsConfig::ATTACH])) {
-		if (RandomPercentage(config[RandomNumsConfig::ATTACH_USE])) {
+	if (RandomPercentage(config[RandomPercentagesEnum::ATTACH])) {
+		if (RandomPercentage(config[RandomPercentagesEnum::ATTACH_USE])) {
 			// We call this directly so we have a higher chance to fuzz persistent databases
 			return GenerateAttachUse();
 		}
 		return GenerateStatement(StatementType::ATTACH_STATEMENT);
 	}
-	if (RandomPercentage(config[RandomNumsConfig::DETACH])) {
+	if (RandomPercentage(config[RandomPercentagesEnum::DETACH])) {
 		return GenerateStatement(StatementType::DETACH_STATEMENT);
 	}
-	if (RandomPercentage(config[RandomNumsConfig::SET])) {
+	if (RandomPercentage(config[RandomPercentagesEnum::SET])) {
 		return GenerateStatement(StatementType::SET_STATEMENT);
 	}
-	if (RandomPercentage(config[RandomNumsConfig::DELETE])) { //20
+	if (RandomPercentage(config[RandomPercentagesEnum::DELETE])) { //20
 		return GenerateStatement(StatementType::DELETE_STATEMENT);
 	}
 	return GenerateStatement(StatementType::CREATE_STATEMENT);

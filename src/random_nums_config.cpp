@@ -44,8 +44,8 @@ unordered_map<RandomPercentagesEnum, idx_t> GetConfigFromFile(const char *json_s
             auto it = StringToRandomPercentagesEnum.find(k);
             if (it != StringToRandomPercentagesEnum.end()) {
                 RandomPercentagesEnum perc_type = it->second;
-                idx_t perc_value = yyjson_get_int(val);
-                config_from_file[perc_type] = perc_value;
+                auto perc_value = yyjson_get_str(val);
+                config_from_file[perc_type] = std::stoi(perc_value);
             }
         }
     } else {
