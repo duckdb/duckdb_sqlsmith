@@ -9,12 +9,11 @@
 #pragma once
 
 #include "duckdb.hpp"
-#include "percentages_enum.hpp"
 #include "yyjson.hpp"
 
 namespace duckdb {
 
-enum class RandomNumsConfig : idx_t {
+enum class RandomPercentagesEnum : idx_t {
 	SELECT = 0,
     ATTACH = 1,
     ATTACH_USE = 2,
@@ -23,8 +22,8 @@ enum class RandomNumsConfig : idx_t {
     DELETE = 5,
 };
 
-unordered_map<RandomNumsConfig, idx_t> GetDefaultConfig();
-unordered_map<RandomNumsConfig, idx_t> GetConfigFromFile(const char *json_string);
-string PercentagesEnumTypeToString(RandomNumsConfig type);
+unordered_map<RandomPercentagesEnum, idx_t> GetDefaultConfig();
+unordered_map<RandomPercentagesEnum, idx_t> GetConfigFromFile(const char *json_string);
+string RandomPercentagesEnumToString(RandomPercentagesEnum type);
 
 } // namespace duckdb

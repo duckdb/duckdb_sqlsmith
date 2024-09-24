@@ -8,30 +8,30 @@ namespace duckdb {
 
 using namespace duckdb_yyjson;
 
-unordered_map<RandomNumsConfig, idx_t> GetDefaultConfig() {
-    unordered_map<RandomNumsConfig, idx_t> default_config = {
-        { RandomNumsConfig::ATTACH, 40 },
-        { RandomNumsConfig::ATTACH_USE, 50 },
-        { RandomNumsConfig::DELETE, 40 },
-        { RandomNumsConfig::DETACH, 60 },
-        { RandomNumsConfig::SELECT, 60 },
-        { RandomNumsConfig::SET, 30 }
+unordered_map<RandomPercentagesEnum, idx_t> GetDefaultConfig() {
+    unordered_map<RandomPercentagesEnum, idx_t> default_config = {
+        { RandomPercentagesEnum::ATTACH, 40 },
+        { RandomPercentagesEnum::ATTACH_USE, 50 },
+        { RandomPercentagesEnum::DELETE, 40 },
+        { RandomPercentagesEnum::DETACH, 60 },
+        { RandomPercentagesEnum::SELECT, 60 },
+        { RandomPercentagesEnum::SET, 30 }
     };
     return default_config;
 }
 
-unordered_map<string, RandomNumsConfig> StringToRandomNumsConfig = {
-    { "attach_percentage", RandomNumsConfig::ATTACH },
-    { "attach_use_percentage", RandomNumsConfig::ATTACH_USE },
-    { "delete_percentage", RandomNumsConfig::DELETE },
-    { "detach_percentage", RandomNumsConfig::DETACH },
-    { "select_percentage", RandomNumsConfig::SELECT },
-    { "set_percentage", RandomNumsConfig::SET }
+unordered_map<string, RandomPercentagesEnum> StringToRandomPercentagesEnum = {
+    { "attach_percentage", RandomPercentagesEnum::ATTACH },
+    { "attach_use_percentage", RandomPercentagesEnum::ATTACH_USE },
+    { "delete_percentage", RandomPercentagesEnum::DELETE },
+    { "detach_percentage", RandomPercentagesEnum::DETACH },
+    { "select_percentage", RandomPercentagesEnum::SELECT },
+    { "set_percentage", RandomPercentagesEnum::SET }
 };
 
 
-unordered_map<RandomNumsConfig, idx_t> GetConfigFromFile(const char *json_string) {
-    unordered_map<RandomNumsConfig, idx_t> config_from_file;
+unordered_map<RandomPercentagesEnum, idx_t> GetConfigFromFile(const char *json_string) {
+    unordered_map<RandomPercentagesEnum, idx_t> config_from_file;
     auto doc = yyjson_read_file(json_string, YYJSON_READ_NOFLAG, NULL, NULL);
     if (doc) {
         yyjson_val *obj = yyjson_doc_get_root(doc);
@@ -41,9 +41,9 @@ unordered_map<RandomNumsConfig, idx_t> GetConfigFromFile(const char *json_string
         while ((key = yyjson_obj_iter_next(&iter))) {
             const char* k = yyjson_get_str(key);
             val = yyjson_obj_iter_get_val(key);
-            auto it = StringToRandomNumsConfig.find(k);
-            if (it != StringToRandomNumsConfig.end()) {
-                RandomNumsConfig perc_type = it->second;
+            auto it = StringToRandomPercentagesEnum.find(k);
+            if (it != StringToRandomPercentagesEnum.end()) {
+                RandomPercentagesEnum perc_type = it->second;
                 idx_t perc_value = yyjson_get_int(val);
                 config_from_file[perc_type] = perc_value;
             }
