@@ -13,7 +13,6 @@
 #include "random_nums_config.hpp"
 
 namespace duckdb {
-using namespace std;
 
 struct FileHandle;
 

@@ -32,20 +32,18 @@ void FuzzyDuck::BeginFuzzing() {
 		RunQuery("PRAGMA enable_verification");
 	}
 	if (!randoms_config_filepath.empty()) {
-		randoms_config_handle = fs.OpenFile(randoms_config_filepath, FileFlags::FILE_FLAGS_READ);
 		config = GetConfigFromFile(randoms_config_filepath.c_str());
 		if (!config.size()) {
 			config = GetDefaultConfig();
 		}
+	} else {
+		config = GetDefaultConfig();
 	}
 }
 
 void FuzzyDuck::EndFuzzing() {
 	if (complete_log_handle) {
 		complete_log_handle->Close();
-	}
-	if (randoms_config_handle) {
-		randoms_config_handle->Close();
 	}
 }
 
