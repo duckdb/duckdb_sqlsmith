@@ -1,0 +1,30 @@
+{
+    "attach_percentage": "20",
+    "select": {
+        "select_percentage": "1",
+        "select_node": {
+            "select_node_perc": "2",
+            "select_node_is_distinct_perc": "3",
+            "select_node_from_table_perc": "4",
+            "select_node_where_perc": "5",
+            "select_node_having_perc": "6",
+            "select_node_groups": {
+                "select_node_groups_perc": "7",
+                "select_node_group_by_perc": "8"
+            },
+            "select_node_qualify_perc": "9",
+            "select_node_aggregate_perc": "10",
+            "select_node_sample": {
+                "select_node_sample_perc": "11",
+                "select_node_sample_is_perc": "12",
+                "select_node_sample_size": "13"
+            }
+        },
+        "result_modifiers": "14",
+        "limit_percent_modifier": "15",
+        "limit_percent_modifier_limit": "16",
+        "limit_percent_modifier_offset": "17",
+        "limit_modifier_limit": "18", 
+        "limit_modifier_offset": "19"
+    }
+}
