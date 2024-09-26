@@ -46,14 +46,6 @@ unordered_map<string, RandomPercentagesEnum> StringToRandomPercentagesEnum = {
     { "limit_modifier_offset", RandomPercentagesEnum::LIMIT_MODIFIER_OFFSET }
 };
 
-enum Statements {
-    select = 0,
-    attach,
-    delete_st,
-    set,
-
-};
-
 void ParseJsonObj(yyjson_val *obj, unordered_map<RandomPercentagesEnum, idx_t> &config_from_file) {
     yyjson_obj_iter iter;
     yyjson_obj_iter_init(obj, &iter);
@@ -84,7 +76,6 @@ unordered_map<RandomPercentagesEnum, idx_t> GetConfigFromFile(const char *json_s
         if (yyjson_is_obj(root)) {
             ParseJsonObj(root, config_from_file);
         }
-        // Free the doc
         yyjson_doc_free(doc);
     } else {
         // Couldn't read JSON with percentages config
