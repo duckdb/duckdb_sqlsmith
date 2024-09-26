@@ -67,6 +67,8 @@ void ParseJsonObj(yyjson_val *obj, unordered_map<RandomPercentagesEnum, idx_t> &
     }
 }
 
+
+
 unordered_map<RandomPercentagesEnum, idx_t> GetConfigFromFile(const char *json_string) {
     
     unordered_map<RandomPercentagesEnum, idx_t> config_from_file;
@@ -81,6 +83,13 @@ unordered_map<RandomPercentagesEnum, idx_t> GetConfigFromFile(const char *json_s
         // Couldn't read JSON with percentages config
         yyjson_doc_free(doc);
         return GetDefaultConfig();
+    }
+    // set values of missing statement types to 0
+    for (idx_t i = 0; i < static_cast<int>(RandomPercentagesEnum::COUNT); ++i) {
+        RandomPercentagesEnum statement_type = static_cast<RandomPercentagesEnum>(i);
+        if (config_from_file.find(statement_type) == config_from_file.end()) {
+            config_from_file[statement_type] = 0;
+        }
     }
     return config_from_file;
 }
