@@ -1,5 +1,18 @@
 {
-    "attach_percentage": "20",
+    "attach": {
+        "attach_percentage": "20",
+        "attach_use_percentage": "21",
+        "attach_read_only": "30"
+    },
+    "detach": {
+        "detach_percentage": "22",
+        "detach_random_name": "29"
+    },
+    "set": {
+        "set_percentage": "23",
+        "set_attached_db": "24"
+    },
+    "delete_percentage": "25",
     "select": {
         "select_percentage": "1",
         "select_node": {
@@ -26,5 +39,59 @@
         "limit_percent_modifier_offset": "17",
         "limit_modifier_limit": "18", 
         "limit_modifier_offset": "19"
+    },
+    "create": {
+        "create_percentage": "26",
+        "create_generate_select": "27",
+        "create_num_cols": "28"
+    },
+    "table_ref": {
+        "table_ref_base_table_ref_perc": "31",
+        "table_ref_expression_list_ref": "32",
+        "table_ref_join_ref": "33" 
+    },
+    "join_ref": {
+        "join_ref_cross": "34",
+        "join_ref_asof": "35",
+        "join_ref_natural": "36",
+        "join_ref_positional": "37",
+        "join_ref_general_expression": "38"
+    },
+    "expression": {
+        "expression_column_ref": "39",
+        "expression_constant": "40",
+        "expression_subquery": "41"
+    },
+    "constant_value": {
+        "constant_value_bigint": "42",
+        "constant_value_to_string": "43"
+    },
+    "function": {
+        "function_aggregate": {
+            "function_aggregate_window_function": "44",
+            "function_aggregate_order_by": "45",
+            "function_aggregate_distinct": "46"
+        }
+    },
+    "window_function": {
+        "window_function_expression": "47",
+        "window_function_random_expression": "48",
+        "window_function_ignore_nulls": "49"
+    },
+    "star": {
+        "star_relation_name": "50",
+        "star_column_name": "51",
+        "star_column_name_with_expression": "52",
+        "star_columns": {
+            "star_columns_true": "53",
+            "star_columns_true_lambda": "54"
+        }
+    },
+    "position_reference": "55",
+    "relational_name": {
+        "relational_name_choose_current": "56"
+    },
+    "column_names": {
+        "column_names_choose_current": "57"
     }
 }
