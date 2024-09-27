@@ -79,7 +79,7 @@ def run_fuzzer_script(fuzzer):
         return "call sqlsmith(max_queries=${MAX_QUERIES}, seed=${SEED}, verbose_output=1, log='${LAST_LOG_FILE}', complete_log='${COMPLETE_LOG_FILE}');"
     elif fuzzer == 'duckfuzz':
         return "call fuzzyduck(max_queries=${MAX_QUERIES}, seed=${SEED}, verbose_output=1, log='${LAST_LOG_FILE}', complete_log='${COMPLETE_LOG_FILE}', \
-        enable_verification='${ENABLE_VERIFICATION}', randoms_config_filepath='${RANDOMS_CONFIG_FILEPATH});"
+        enable_verification='${ENABLE_VERIFICATION}', randoms_config_filepath='${RANDOMS_CONFIG_FILEPATH}');"
     elif fuzzer == 'duckfuzz_functions':
         return "call fuzz_all_functions(seed=${SEED}, verbose_output=1, log='${LAST_LOG_FILE}', complete_log='${COMPLETE_LOG_FILE}');"
     else:
