@@ -55,7 +55,6 @@ unordered_map<string, RandomPercentagesEnum> StringToRandomPercentagesEnum = {
     { "table_ref_expression_list_ref", RandomPercentagesEnum::TABLE_REF_EXPRESSION_LIST_REF },
     { "table_ref_join_ref", RandomPercentagesEnum::TABLE_REF_JOIN_REF },
     { "join_ref_cross", RandomPercentagesEnum::JOIN_REF_CROSS },
-    { "join_ref_cross", RandomPercentagesEnum::JOIN_REF_CROSS },
     { "join_ref_asof", RandomPercentagesEnum::JOIN_REF_ASOF },
     { "join_ref_natural", RandomPercentagesEnum::JOIN_REF_NATURAL },
     { "join_ref_positional", RandomPercentagesEnum::JOIN_REF_POSITIONAL },
