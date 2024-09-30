@@ -78,6 +78,7 @@ string FuzzyDuck::GenerateQuery() {
 	// generate statement
 	StatementGenerator generator(context);
 	generator.verification_enabled = enable_verification;
+	generator.config = config;
 	// accumulate statement(s)
 	auto statement = string("");
 	if (generator.RandomPercentage(10)) {
@@ -86,12 +87,12 @@ string FuzzyDuck::GenerateQuery() {
 		LogTask("Generating Multi-Statement query of " + to_string(number_of_statements) + " statements with seed " +
 			to_string(seed));
 		for (idx_t i = 0; i < number_of_statements; i++) {
-			statement += generator.GenerateStatement(config)->ToString() + "; ";
+			statement += generator.GenerateStatement()->ToString() + "; ";
 		}
 	} else {
 		// normal statement
 		LogTask("Generating Single-Statement query with seed " + to_string(seed));
-		statement = generator.GenerateStatement(config)->ToString();
+		statement = generator.GenerateStatement()->ToString();
 	}
 	return statement;
 }
