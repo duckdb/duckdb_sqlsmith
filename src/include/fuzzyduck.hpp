@@ -30,6 +30,7 @@ public:
 	bool enable_verification = false;
 	idx_t timeout = 30;
 	string randoms_config_filepath;
+	// RandomNumsConfig config;
 	unordered_map<RandomPercentagesEnum, idx_t> config;
 
 public:

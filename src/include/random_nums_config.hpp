@@ -126,8 +126,19 @@ enum class RandomPercentagesEnum  : idx_t {
 
 };
 
-unordered_map<RandomPercentagesEnum, idx_t> GetDefaultConfig();
-unordered_map<RandomPercentagesEnum, idx_t> GetConfigFromFile(const char *json_string);
-string RandomPercentagesEnumToString(RandomPercentagesEnum type);
+class RandomNumsConfig {
+public: 
+    RandomNumsConfig();
+    RandomNumsConfig(const char *config_file_path);
+    ~RandomNumsConfig();
 
-} // namespace duckdb
+    RandomPercentagesEnum percentages_selector;
+    // unordered_map<RandomPercentagesEnum, idx_t> config;
+    
+    unordered_map<RandomPercentagesEnum, idx_t> GetDefaultConfig();
+    unordered_map<RandomPercentagesEnum, idx_t> GetConfigFromFile(const char *json_string);
+    string RandomPercentagesEnumToString(RandomPercentagesEnum type);
+
+};
+
+}// namespace duckdb

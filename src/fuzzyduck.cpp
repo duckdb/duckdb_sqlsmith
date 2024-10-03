@@ -32,12 +32,9 @@ void FuzzyDuck::BeginFuzzing() {
 		RunQuery("PRAGMA enable_verification");
 	}
 	if (!randoms_config_filepath.empty()) {
-		config = GetConfigFromFile(randoms_config_filepath.c_str());
-		if (!config.size()) {
-			config = GetDefaultConfig();
-		}
+		config = RandomNumsConfig().GetConfigFromFile(randoms_config_filepath.c_str());
 	} else {
-		config = GetDefaultConfig();
+		config = RandomNumsConfig().GetDefaultConfig();
 	}
 }
 

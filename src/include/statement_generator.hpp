@@ -41,6 +41,7 @@ public:
 	friend class ExpressionDepthChecker;
 	friend class AggregateChecker;
 	friend class WindowChecker;
+	unordered_map<RandomPercentagesEnum, idx_t> config;
 
 public:
 	StatementGenerator(ClientContext &context);
@@ -48,7 +49,7 @@ public:
 	~StatementGenerator();
 
 public:
-	unique_ptr<SQLStatement> GenerateStatement(unordered_map<RandomPercentagesEnum, idx_t> config);
+	unique_ptr<SQLStatement> GenerateStatement();
 
 	vector<string> GenerateAllFunctionCalls();
 
