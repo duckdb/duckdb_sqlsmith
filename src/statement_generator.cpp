@@ -312,6 +312,7 @@ void StatementGenerator::GenerateCTEs(QueryNode &node) {
 unique_ptr<QueryNode> StatementGenerator::GenerateQueryNode() {
 	unique_ptr<QueryNode> result;
 	bool is_distinct = false;
+	idx_t config_setop = config[RandomPercentagesEnum::SETOP_COUNT_LIMIT];
 	if (RandomPercentage(config[RandomPercentagesEnum::SELECT_NODE])) { // 70
 		// select node
 		auto select_node = make_uniq<SelectNode>();
@@ -369,25 +370,33 @@ unique_ptr<QueryNode> StatementGenerator::GenerateQueryNode() {
 		}
 		result = std::move(select_node);
 	} else {
-		auto setop = make_uniq<SetOperationNode>();
-		GenerateCTEs(*setop);
-		setop->setop_type = Choose<SetOperationType>({SetOperationType::EXCEPT, SetOperationType::INTERSECT,
-		                                              SetOperationType::UNION, SetOperationType::UNION_BY_NAME});
-		setop->left = GenerateQueryNode();
-		setop->right = GenerateQueryNode();
-		switch (setop->setop_type) {
-		case SetOperationType::EXCEPT:
-		case SetOperationType::INTERSECT:
-			is_distinct = true;
-			break;
-		case SetOperationType::UNION:
-		case SetOperationType::UNION_BY_NAME:
-			is_distinct = RandomBoolean();
-			break;
-		default:
-			throw InternalException("Unsupported set operation type");
+		// limit the count of generated setops
+		while (setop_limit < config_setop) {
+			setop_limit++;
+			auto setop = make_uniq<SetOperationNode>();
+			GenerateCTEs(*setop);
+			//should be possible to choose: from the complete enum, from only one enum value defined in config file, from 2-3 enum values
+			setop->setop_type = Choose<SetOperationType>({SetOperationType::EXCEPT, SetOperationType::INTERSECT,
+														SetOperationType::UNION, SetOperationType::UNION_BY_NAME});
+			setop->left = GenerateQueryNode();
+			setop->right = GenerateQueryNode();
+			switch (setop->setop_type) {
+			case SetOperationType::EXCEPT:
+			case SetOperationType::INTERSECT:
+				is_distinct = true;
+				break;
+			case SetOperationType::UNION:
+			case SetOperationType::UNION_BY_NAME:
+				is_distinct = RandomBoolean();
+				break;
+			default:
+				throw InternalException("Unsupported set operation type");
+			}
+			if (setop_limit == config_setop) {
+				result = std::move(setop);
+			}
 		}
-		result = std::move(setop);
+		result = std::move(make_uniq<SelectNode>());
 	}
 
 	if (is_distinct) {

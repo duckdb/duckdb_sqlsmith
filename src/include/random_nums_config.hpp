@@ -51,76 +51,77 @@ enum class RandomPercentagesEnum  : idx_t {
     SELECT_NODE_SAMPLE = 18,
     SELECT_NODE_SAMPLE_IS_PERC = 19,
     SELECT_NODE_SAMPLE_SIZE = 20,
-    RESULT_MODIFIERS = 21,
-    LIMIT_PERCENT_MODIFIER = 22,
-    LIMIT_PERCENT_MODIFIER_LIMIT = 23,
-    LIMIT_PERCENT_MODIFIER_OFFSET = 24,
-    LIMIT_MODIFIER_LIMIT = 25,
-    LIMIT_MODIFIER_OFFSET = 26,
+    SETOP_COUNT_LIMIT = 21,
+    RESULT_MODIFIERS = 22,
+    LIMIT_PERCENT_MODIFIER = 23,
+    LIMIT_PERCENT_MODIFIER_LIMIT = 24,
+    LIMIT_PERCENT_MODIFIER_OFFSET = 25,
+    LIMIT_MODIFIER_LIMIT = 26,
+    LIMIT_MODIFIER_OFFSET = 27,
     
     // ----------------------------------
 	// Generate Create Percentages
 	// ----------------------------------
-    CREATE = 27,
-    CREATE_GENERATE_SELECT = 28,
-    CREATE_NUM_COLS = 29,
+    CREATE = 28,
+    CREATE_GENERATE_SELECT = 29,
+    CREATE_NUM_COLS = 30,
     // -----------------------------------
 	// Generate Table Ref Percentages
 	// -----------------------------------
-    TABLE_REF_BASE_TABLE_REF_PERC = 30,
-    TABLE_REF_EXPRESSION_LIST_REF = 31,
-    TABLE_REF_JOIN_REF = 32,
+    TABLE_REF_BASE_TABLE_REF_PERC = 31,
+    TABLE_REF_EXPRESSION_LIST_REF = 32,
+    TABLE_REF_JOIN_REF = 33,
 
     // -----------------------------------
 	// Generate Join Ref Percentages
 	// -----------------------------------
-    JOIN_REF_CROSS = 33,
-    JOIN_REF_ASOF = 34,
-    JOIN_REF_NATURAL = 35,
-    JOIN_REF_POSITIONAL = 36,
-    JOIN_REF_GENERAL_EXPRESSION = 37,
+    JOIN_REF_CROSS = 34,
+    JOIN_REF_ASOF = 35,
+    JOIN_REF_NATURAL = 36,
+    JOIN_REF_POSITIONAL = 37,
+    JOIN_REF_GENERAL_EXPRESSION = 38,
     
     // -----------------------------------
 	// Generate Expression Percentages
 	// -----------------------------------
-    EXPRESSION_COLUMN_REF = 38,
-    EXPRESSION_CONSTANT = 39,
-    EXPRESSION_SUBQUERY = 40,
+    EXPRESSION_COLUMN_REF = 39,
+    EXPRESSION_CONSTANT = 40,
+    EXPRESSION_SUBQUERY = 41,
     
     // -----------------------------------
 	// Generate Constant Value Percentages
 	// -----------------------------------
-    CONSTANT_VALUE_BIGINT = 41,
-    CONSTANT_VALUE_TO_STRING = 42,
+    CONSTANT_VALUE_BIGINT = 42,
+    CONSTANT_VALUE_TO_STRING = 43,
 
     // -----------------------------------
 	// Generate Function Percentages
 	// -----------------------------------    
-    FUNCTION_AGGREGATE_WINDOW_FUNCTION = 43,
-    FUNCTION_AGGREGATE_ORDER_BY = 44,
-    FUNCTION_AGGREGATE_DISTINCT = 45,
-    FUNCTION_AGGREGATE_RANDOM_EXPRESSION = 46,
+    FUNCTION_AGGREGATE_WINDOW_FUNCTION = 44,
+    FUNCTION_AGGREGATE_ORDER_BY = 45,
+    FUNCTION_AGGREGATE_DISTINCT = 46,
+    FUNCTION_AGGREGATE_RANDOM_EXPRESSION = 47,
 
     // -----------------------------------
 	// Generate Window Function Percentages
 	// -----------------------------------    
-    WINDOW_FUNCTION_PARTITIONS = 47,
-    WINDOW_FUNCTION_ORDERS = 48,
-    WINDOW_FUNCTION_IGNORE_NULLS = 49,
-    WINDOW_FUNCTION_RESULT_OFFSET = 50,
-    WINDOW_FUNCTION_RESULT_DEFAULT = 51,
+    WINDOW_FUNCTION_PARTITIONS = 48,
+    WINDOW_FUNCTION_ORDERS = 49,
+    WINDOW_FUNCTION_IGNORE_NULLS = 50,
+    WINDOW_FUNCTION_RESULT_OFFSET = 51,
+    WINDOW_FUNCTION_RESULT_DEFAULT = 52,
     
     // -----------------------------------
 	// Generate Star Percentages
 	// -----------------------------------
-    STAR_RELATION_NAME = 52,
-    STAR_COLUMN_NAME = 53,
-    STAR_COLUMN_NAME_EXCLUDE_LIST = 54,
-    STAR_COLUMNS_TRUE = 55,
-    STAR_COLUMNS_TRUE_LAMBDA = 56,
+    STAR_RELATION_NAME = 53,
+    STAR_COLUMN_NAME = 54,
+    STAR_COLUMN_NAME_EXCLUDE_LIST = 55,
+    STAR_COLUMNS_TRUE = 56,
+    STAR_COLUMNS_TRUE_LAMBDA = 57,
     
-    RELATIONAL_NAME_CHOOSE_CURRENT = 57,
-    COLUMN_NAMES_CHOOSE_CURRENT = 58,
+    RELATIONAL_NAME_CHOOSE_CURRENT = 58,
+    COLUMN_NAMES_CHOOSE_CURRENT = 59,
         
     COUNT
 

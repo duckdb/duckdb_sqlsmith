@@ -30,6 +30,7 @@ unordered_map<string, RandomPercentagesEnum> StringToRandomPercentagesEnum = {
 	{ "select_node_sample_perc", RandomPercentagesEnum::SELECT_NODE_SAMPLE },
 	{ "select_node_sample_is_perc", RandomPercentagesEnum::SELECT_NODE_SAMPLE_IS_PERC },
 	{ "select_node_sample_size", RandomPercentagesEnum::SELECT_NODE_SAMPLE_SIZE },
+	{ "setop_count_limit", RandomPercentagesEnum::SETOP_COUNT_LIMIT },
 	{ "result_modifiers", RandomPercentagesEnum::RESULT_MODIFIERS },
 	{ "limit_percent_modifier", RandomPercentagesEnum::LIMIT_PERCENT_MODIFIER },
 	{ "limit_percent_modifier_limit", RandomPercentagesEnum::LIMIT_PERCENT_MODIFIER_LIMIT },
