@@ -16,7 +16,7 @@
     "select": {
         "select_percentage": "70",
         "select_node": {
-            "select_node_perc": "70",
+            "select_node_perc": "5",
             "select_node_is_distinct_perc": "30",
             "select_node_from_table_perc": "95",
             "select_node_where_perc": "60",
@@ -33,6 +33,7 @@
                 "select_node_sample_size": "100"
             }
         },
+        "setop": "40",
         "result_modifiers": "5",
         "limit_percent_modifier": "50",
         "limit_percent_modifier_limit": "30",

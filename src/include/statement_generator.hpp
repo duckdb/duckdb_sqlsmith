@@ -42,7 +42,6 @@ public:
 	friend class AggregateChecker;
 	friend class WindowChecker;
 	unordered_map<RandomPercentagesEnum, idx_t> config;
-	idx_t setop_limit = 0;
 
 public:
 	StatementGenerator(ClientContext &context);
