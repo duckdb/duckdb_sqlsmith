@@ -70,6 +70,7 @@
     "function": {
         "function_aggregate": {
             "function_aggregate_window_function": "10",
+            "function_aggregate_filter": "10",
             "function_aggregate_order_by": "10",
             "function_aggregate_random_expression": "10",
             "function_aggregate_distinct": "10"
@@ -79,12 +80,14 @@
         "window_function_partitions": "50",
         "window_function_orders": "30",
         "window_function_ignore_nulls": "30",
+        "window_function_filter_expr": "30",
         "window_function_result_offset": "30",
         "window_function_result_default": "30"
     },
     "star": {
         "star_relation_name": "10",
         "star_column_name_exclude_list": "20",
+        "star_column_name_replace_list": "20",
         "star_column_name": "20",
         "star_columns": {
             "star_columns_true": "50",

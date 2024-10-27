@@ -99,6 +99,7 @@ enum class RandomPercentagesEnum  : idx_t {
 	// -----------------------------------    
     FUNCTION_AGGREGATE_WINDOW_FUNCTION = 44,
     FUNCTION_AGGREGATE_ORDER_BY = 45,
+    FUNCTION_AGGREGATE_FILTER = 60,
     FUNCTION_AGGREGATE_DISTINCT = 46,
     FUNCTION_AGGREGATE_RANDOM_EXPRESSION = 47,
 
@@ -107,6 +108,7 @@ enum class RandomPercentagesEnum  : idx_t {
 	// -----------------------------------    
     WINDOW_FUNCTION_PARTITIONS = 48,
     WINDOW_FUNCTION_ORDERS = 49,
+    WINDOW_FUNCTION_FILTER_EXPRESSION = 61,
     WINDOW_FUNCTION_IGNORE_NULLS = 50,
     WINDOW_FUNCTION_RESULT_OFFSET = 51,
     WINDOW_FUNCTION_RESULT_DEFAULT = 52,
@@ -117,6 +119,7 @@ enum class RandomPercentagesEnum  : idx_t {
     STAR_RELATION_NAME = 53,
     STAR_COLUMN_NAME = 54,
     STAR_COLUMN_NAME_EXCLUDE_LIST = 55,
+    STAR_COLUMN_NAME_REPLACE_LIST = 62,
     STAR_COLUMNS_TRUE = 56,
     STAR_COLUMNS_TRUE_LAMBDA = 57,
     
